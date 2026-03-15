@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZAGRO — Page introuvable</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script>(function(){var t=localStorage.getItem('zagro_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <style>
+    .error-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .error-page__orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+    .error-page__orb--1 { width: 400px; height: 400px; top: -100px; left: -100px; background: radial-gradient(circle, rgba(0,87,255,0.2), transparent 70%); }
+    .error-page__orb--2 { width: 350px; height: 350px; bottom: -80px; right: -80px; background: radial-gradient(circle, rgba(15,155,142,0.15), transparent 70%); }
+    .error-code {
+      font-size: clamp(6rem, 20vw, 12rem);
+      font-weight: 900;
+      letter-spacing: -4px;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--orange-2) 0%, var(--teal-2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .error-emoji { font-size: 3rem; margin-bottom: 16px; position: relative; z-index: 1; }
+    .error-title {
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      font-weight: 800;
+      color: var(--text-1);
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    .error-sub {
+      font-size: 1rem;
+      color: var(--text-2);
+      max-width: 420px;
+      line-height: 1.6;
+      margin-bottom: 36px;
+      position: relative;
+      z-index: 1;
+    }
+    .error-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+    .nav-logo-404 {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-1);
+      text-decoration: none;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body class="landing">
+  <a href="/" class="nav-logo-404">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="28" height="28">
+      <defs>
+        <linearGradient id="zg" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#00AAFF"/>
+          <stop offset="100%" stop-color="#0057FF"/>
+        </linearGradient>
+      </defs>
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#zg)" opacity="0.15"/>
+      <path d="M10 12 L28 12 L13 22 L30 22" stroke="url(#zg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M20 30 L20 19 M17 23 L20 19 L23 23" stroke="url(#zg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    ZAGRO
+  </a>
+
+  <div class="error-page">
+    <div class="error-page__orb error-page__orb--1"></div>
+    <div class="error-page__orb error-page__orb--2"></div>
+    <div class="error-emoji"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+    <div class="error-code">404</div>
+    <h1 class="error-title">Cette page s'est perdue…<br />comme une mauvaise excuse.</h1>
+    <p class="error-sub">La page que tu cherches n'existe pas. Mais toi, tu existes — et tu as des habitudes à tracker.</p>
+    <div class="error-actions">
+      <a href="/" class="btn btn--primary btn--lg">Retour à l'accueil →</a>
+      <a href="/dashboard" class="btn btn--ghost btn--lg">Ouvrir mon dashboard</a>
+    </div>
+  </div>
+</body>
+</html>

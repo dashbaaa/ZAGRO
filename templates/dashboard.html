@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZAGRO — Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+  <link rel="stylesheet" href="/static/css/goals.css" />
+  <script>(function(){var t=localStorage.getItem('zagro_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="app">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <a href="/" class="sidebar__logo">
+      <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 36" width="42" height="24">
+        <defs><linearGradient id="mt-dash" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#333333"/><stop offset="100%" stop-color="#181818"/></linearGradient></defs>
+        <path d="M0,36 L0,26 L5,20 L9,24 L14,14 L17,18 L21,8 L24,12 L28,4 L32,12 L36,6 L40,14 L43,10 L47,18 L52,12 L56,20 L60,16 L64,22 L64,36 Z" fill="url(#mt-dash)"/>
+        <g transform="rotate(-8, 32, 19)"><path d="M8,10 L56,10 L8,28 L56,28" stroke="#FFFFFF" stroke-width="7" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="20" fill="none"/><path d="M8,10 L56,10 L8,28 L56,28" stroke="#FFD700" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="20" fill="none"/></g>
+      </svg>
+      <span>ZAGRO</span>
+    </a>
+
+    <nav class="sidebar__nav">
+      <a href="#log" class="sidebar__link sidebar__link--active" data-section="log">
+        <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
+        <span>Journal</span>
+      </a>
+      <a href="#history" class="sidebar__link" data-section="history">
+        <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        <span>Historique</span>
+      </a>
+      <a href="#insights" class="sidebar__link" data-section="insights">
+        <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+        <span>Insights</span>
+      </a>
+      <a href="#coach" class="sidebar__link" data-section="coach">
+        <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg></span>
+        <span>Coach IA</span>
+      </a>
+      <a href="#goals" class="sidebar__link" data-section="goals">
+        <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+        <span>Objectifs</span>
+      </a>
+    </nav>
+
+    <!-- Badges section -->
+    <div class="sidebar__badges" id="sidebar-badges" style="display:none">
+      <div class="sidebar__badges-title">Mes badges</div>
+      <div class="sidebar__badges-list" id="badges-list"></div>
+    </div>
+
+    <div class="sidebar__score" id="sidebar-score">
+      <div class="sidebar__score-label">Score semaine</div>
+      <div class="sidebar__score-num" id="score-display">—</div>
+      <div class="sidebar__score-sub">/ 100</div>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="topbar__left">
+        <h1 class="topbar__title" id="section-title">Journal du jour</h1>
+        <p class="topbar__date"><span id="user-greeting"></span><span id="today-date"></span></p>
+      </div>
+      <div class="topbar__right">
+        <div class="topbar__streak" id="streak-badge">
+          <span id="streak-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+          <span id="streak-count">0</span>
+          <span id="streak-label">jours consécutifs</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ══ SECTION : LOG ══ -->
+    <section class="content-section active" id="section-log">
+
+      <!-- Already logged today banner -->
+      <div class="already-logged" id="already-logged" style="display:none">
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span>Tu as déjà enregistré aujourd'hui. Modifie si nécessaire.</span>
+      </div>
+
+      <!-- Quick stats bar -->
+      <div class="quick-stats" id="quick-stats" style="display:none">
+        <div class="quick-stat">
+          <span class="quick-stat__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+          <div>
+            <div class="quick-stat__val" id="qs-streak">0</div>
+            <div class="quick-stat__label">Streak</div>
+          </div>
+        </div>
+        <div class="quick-stat">
+          <span class="quick-stat__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></span>
+          <div>
+            <div class="quick-stat__val" id="qs-score">—</div>
+            <div class="quick-stat__label">Score semaine</div>
+          </div>
+        </div>
+        <div class="quick-stat">
+          <span class="quick-stat__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          <div>
+            <div class="quick-stat__val" id="qs-days">0</div>
+            <div class="quick-stat__label">Jours loggés</div>
+          </div>
+        </div>
+        <div class="quick-stat">
+          <span class="quick-stat__icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+          <div>
+            <div class="quick-stat__val" id="qs-badges">0</div>
+            <div class="quick-stat__label">Badges</div>
+          </div>
+        </div>
+      </div>
+
+      <form class="log-form" id="habit-form">
+
+        <!-- Sleep -->
+        <div class="metric-card">
+          <div class="metric-card__header">
+            <div class="metric-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+            <div class="metric-card__text">
+              <h3>Sommeil</h3>
+              <p>Combien d'heures as-tu dormi ?</p>
+            </div>
+            <div class="metric-value" id="sleep-display">7.0h</div>
+          </div>
+          <div class="slider-wrap">
+            <span class="slider-label">4h</span>
+            <input type="range" id="sleep" name="sleep" min="4" max="12" step="0.5" value="7" class="slider slider--blue" />
+            <span class="slider-label">12h</span>
+          </div>
+          <div class="sleep-zones">
+            <span class="zone zone--red">Insuffisant<br/>&lt;6h</span>
+            <span class="zone zone--yellow">Correct<br/>6-7h</span>
+            <span class="zone zone--green">Optimal<br/>7-9h</span>
+            <span class="zone zone--yellow">Long<br/>9-10h</span>
+            <span class="zone zone--red">Trop long<br/>&gt;10h</span>
+          </div>
+        </div>
+
+        <!-- Sport -->
+        <div class="metric-card">
+          <div class="metric-card__header">
+            <div class="metric-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div class="metric-card__text">
+              <h3>Sport</h3>
+              <p>As-tu fait de l'exercice aujourd'hui ?</p>
+            </div>
+          </div>
+          <div class="toggle-group">
+            <button type="button" class="toggle-btn toggle-btn--no active" id="sport-no" onclick="setSport(false)">
+              <span>✗</span> Non
+            </button>
+            <button type="button" class="toggle-btn toggle-btn--yes" id="sport-yes" onclick="setSport(true)">
+              <span>✓</span> Oui
+            </button>
+          </div>
+          <input type="hidden" id="sport" name="sport" value="false" />
+        </div>
+
+        <!-- Water -->
+        <div class="metric-card">
+          <div class="metric-card__header">
+            <div class="metric-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+            <div class="metric-card__text">
+              <h3>Hydratation</h3>
+              <p>Combien de litres d'eau as-tu bus ?</p>
+            </div>
+            <div class="metric-value" id="water-display">1.5L</div>
+          </div>
+          <div class="slider-wrap">
+            <span class="slider-label">0L</span>
+            <input type="range" id="water" name="water" min="0" max="4" step="0.25" value="1.5" class="slider slider--blue" />
+            <span class="slider-label">4L</span>
+          </div>
+          <div class="water-glasses">
+            <div class="glass-container" id="glasses"></div>
+            <span class="water-tip">Objectif : 8 verres (≈ 2L)</span>
+          </div>
+        </div>
+
+        <!-- Mood -->
+        <div class="metric-card">
+          <div class="metric-card__header">
+            <div class="metric-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+            <div class="metric-card__text">
+              <h3>Humeur</h3>
+              <p>Comment te sens-tu aujourd'hui ?</p>
+            </div>
+            <div class="metric-value" id="mood-display">5/10</div>
+          </div>
+          <div class="emoji-scale" id="mood-scale">
+            <!-- generated by JS -->
+          </div>
+          <input type="hidden" id="mood" name="mood" value="5" />
+        </div>
+
+        <!-- Productivity -->
+        <div class="metric-card">
+          <div class="metric-card__header">
+            <div class="metric-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+            <div class="metric-card__text">
+              <h3>Productivité</h3>
+              <p>Évalue ta productivité du jour</p>
+            </div>
+            <div class="metric-value" id="prod-display">5/10</div>
+          </div>
+          <div class="emoji-scale" id="prod-scale">
+            <!-- generated by JS -->
+          </div>
+          <input type="hidden" id="productivity" name="productivity" value="5" />
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--xl submit-btn">
+          <span id="submit-icon">✓</span>
+          <span id="submit-text">ENREGISTRER AUJOURD'HUI →</span>
+        </button>
+
+      </form>
+    </section>
+
+    <!-- ══ SECTION : HISTORY ══ -->
+    <section class="content-section" id="section-history">
+      <div class="history-controls">
+        <button class="period-btn active" data-days="7">7 jours</button>
+        <button class="period-btn" data-days="14">14 jours</button>
+        <button class="period-btn" data-days="30">30 jours</button>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card chart-card--wide">
+          <h3>Sommeil (heures)</h3>
+          <div class="chart-wrap"><canvas id="chart-sleep"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Humeur /10</h3>
+          <div class="chart-wrap"><canvas id="chart-mood"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Productivité /10</h3>
+          <div class="chart-wrap"><canvas id="chart-prod"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Eau (litres)</h3>
+          <div class="chart-wrap"><canvas id="chart-water"></canvas></div>
+        </div>
+        <div class="chart-card chart-card--sport">
+          <h3>Sport</h3>
+          <div class="sport-calendar" id="sport-calendar"></div>
+        </div>
+      </div>
+
+      <!-- Entries table -->
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Sommeil</th>
+              <th>Sport</th>
+              <th>Eau</th>
+              <th>Humeur</th>
+              <th>Productivité</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <tr><td colspan="6" class="empty-row">Aucune donnée</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══ SECTION : INSIGHTS ══ -->
+    <section class="content-section" id="section-insights">
+      <div class="insights-header">
+        <p class="insights-intro">L'IA analyse les corrélations statistiques entre tes habitudes pour révéler ce qui impacte vraiment ta performance.</p>
+      </div>
+
+      <div class="insights-grid" id="insights-grid">
+        <div class="insight-placeholder">
+          <div class="placeholder-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+          <h3>Données insuffisantes</h3>
+          <p>Enregistre au moins 5 jours d'habitudes pour débloquer les insights.</p>
+        </div>
+      </div>
+
+      <!-- Correlation matrix -->
+      <div class="correlation-section" id="correlation-section" style="display:none">
+        <h3>Matrice de corrélations</h3>
+        <div class="correlation-matrix" id="correlation-matrix"></div>
+      </div>
+    </section>
+
+    <!-- ══ SECTION : COACH ══ -->
+    <section class="content-section" id="section-coach">
+      <div class="coach-full">
+        <div class="coach-full__header">
+          <div class="coach-avatar-lg"><svg width="34" height="34" viewBox="0 0 32 32" fill="none" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="22" height="17" rx="2"/><rect x="10" y="14" width="4" height="5" rx="1"/><rect x="18" y="14" width="4" height="5" rx="1"/><line x1="12" y1="23" x2="20" y2="23"/><line x1="16" y1="3" x2="16" y2="10"/><circle cx="16" cy="2.5" r="2"/><line x1="5" y1="18.5" x2="2" y2="18.5"/><line x1="27" y1="18.5" x2="30" y2="18.5"/></svg></div>
+          <div class="coach-full__header-text">
+            <h2>Ton Coach IA<span class="coach-pulse-dot"></span></h2>
+            <p>Analyse personnalisée basée sur tes 7 derniers jours</p>
+          </div>
+          <div class="weekly-score-big" id="coach-score-big">
+            <div class="score-ring">
+              <svg viewBox="0 0 100 100" class="score-ring__svg">
+                <circle cx="50" cy="50" r="40" class="score-ring__bg" />
+                <circle cx="50" cy="50" r="40" class="score-ring__fill" id="score-ring-fill" />
+              </svg>
+              <div class="score-ring__text" id="score-ring-text">—</div>
+            </div>
+            <div class="score-ring__label">Score semaine</div>
+          </div>
+        </div>
+
+        <div class="coach-message" id="coach-message">
+          <div class="coach-loading">
+            <div class="loading-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <p>Analyse de tes habitudes en cours…</p>
+          </div>
+        </div>
+
+        <div class="coach-correlations" id="coach-correlations" style="display:none">
+          <h3>Corrélations détectées cette semaine</h3>
+          <div class="correlations-list" id="correlations-list"></div>
+        </div>
+
+        <button class="btn refresh-btn" onclick="loadInsights()">
+          ↻ ACTUALISER L'ANALYSE
+        </button>
+      </div>
+    </section>
+
+    <!-- ══ SECTION : GOALS ══ -->
+    <section class="content-section" id="section-goals">
+      <svg width="0" height="0" style="position:absolute">
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#CC9900"/>
+            <stop offset="100%" stop-color="#FFD700"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="goals-layout">
+
+        <!-- Current goal card -->
+        <div class="goal-header-card" id="goal-header-card">
+          <div class="goal-header-card__icon" id="goal-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <div class="goal-header-card__text">
+            <div class="goal-header-card__label">Ton objectif</div>
+            <div class="goal-header-card__name" id="goal-name">—</div>
+            <div class="goal-header-card__level" id="goal-meta">—</div>
+          </div>
+          <div class="goal-week-progress">
+            <div class="progress-ring-wrap">
+              <svg class="progress-ring" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="32" class="progress-ring__bg"/>
+                <circle cx="40" cy="40" r="32" class="progress-ring__fill" id="goal-ring-fill"/>
+              </svg>
+              <div class="progress-ring__center">
+                <div class="progress-ring__pct" id="goal-progress-pct">0%</div>
+                <div class="progress-ring__label">semaine</div>
+              </div>
+            </div>
+            <div class="goal-motivational" id="goal-motivational">Commence aujourd'hui</div>
+          </div>
+        </div>
+
+        <!-- Weekly plan -->
+        <div class="workout-plan" id="workout-plan">
+          <h3 class="workout-plan__title">Plan d'entraînement de la semaine</h3>
+          <div class="workout-days" id="workout-days">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Onboarding overlay ── -->
+  <div class="onboarding-overlay" id="onboarding-overlay" style="display:none">
+    <div class="onboarding-modal">
+      <div class="onboarding-progress">
+        <div class="onboarding-progress__step onboarding-progress__step--active" id="ob-step-1"></div>
+        <div class="onboarding-progress__step" id="ob-step-2"></div>
+        <div class="onboarding-progress__step" id="ob-step-3"></div>
+      </div>
+
+      <!-- Step 1: Goal -->
+      <div class="onboarding-step active" id="ob-screen-1">
+        <div class="onboarding-step__emoji"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <h2 class="onboarding-step__title">Quel est ton objectif principal ?</h2>
+        <p class="onboarding-step__sub">ZAGRO va personnaliser ton plan d'entraînement et les conseils de ton coach IA.</p>
+        <div class="ob-goal-grid">
+          <button class="ob-goal-card" data-goal="masse" onclick="selectGoal(this)">
+            <span class="ob-goal-card__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"/><rect x="2" y="9" width="4" height="6" rx="1"/><rect x="18" y="9" width="4" height="6" rx="1"/><rect x="6" y="10" width="3" height="4" rx="0.5"/><rect x="15" y="10" width="3" height="4" rx="0.5"/></svg></span>
+            <span class="ob-goal-card__name">Prise de masse</span>
+            <span class="ob-goal-card__desc">Développe ta musculature et gagne en force</span>
+          </button>
+          <button class="ob-goal-card" data-goal="poids" onclick="selectGoal(this)">
+            <span class="ob-goal-card__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>
+            <span class="ob-goal-card__name">Perte de poids</span>
+            <span class="ob-goal-card__desc">Brûle les graisses et retrouve ta forme</span>
+          </button>
+          <button class="ob-goal-card" data-goal="endurance" onclick="selectGoal(this)">
+            <span class="ob-goal-card__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M8 22l2-7-2-4 4-2 2 4h4"/><path d="M5 13l3-1"/></svg></span>
+            <span class="ob-goal-card__name">Endurance</span>
+            <span class="ob-goal-card__desc">Améliore tes performances cardio et ta résistance</span>
+          </button>
+          <button class="ob-goal-card" data-goal="bienetre" onclick="selectGoal(this)">
+            <span class="ob-goal-card__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C7 17 2 13.5 2 9a5 5 0 0 1 10 0 5 5 0 0 1 10 0c0 4.5-5 8-10 13z"/></svg></span>
+            <span class="ob-goal-card__name">Bien-être mental</span>
+            <span class="ob-goal-card__desc">Réduis le stress et améliore ton équilibre</span>
+          </button>
+        </div>
+        <button class="btn btn--primary btn--xl ob-next" id="ob-next-1" onclick="obNext(2)" disabled>
+          Continuer →
+        </button>
+      </div>
+
+      <!-- Step 2: Level -->
+      <div class="onboarding-step" id="ob-screen-2">
+        <div class="onboarding-step__emoji"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></div>
+        <h2 class="onboarding-step__title">Quel est ton niveau ?</h2>
+        <p class="onboarding-step__sub">Ton plan sera adapté à ton expérience pour être efficace et réaliste.</p>
+        <div class="ob-level-grid">
+          <button class="ob-level-card" data-level="debutant" onclick="selectLevel(this)">
+            <span class="ob-level-card__icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C8 8 4 4 6 0c2 3 5 6 6 12z"/><path d="M12 12c4-4 8-8 6-12-2 3-5 6-6 12z"/></svg></span>
+            <span class="ob-level-card__name">Débutant</span>
+            <span class="ob-level-card__desc">Moins de 6 mois d'entraînement</span>
+          </button>
+          <button class="ob-level-card" data-level="intermediaire" onclick="selectLevel(this)">
+            <span class="ob-level-card__icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+            <span class="ob-level-card__name">Intermédiaire</span>
+            <span class="ob-level-card__desc">6 mois à 2 ans d'entraînement</span>
+          </button>
+          <button class="ob-level-card" data-level="avance" onclick="selectLevel(this)">
+            <span class="ob-level-card__icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+            <span class="ob-level-card__name">Avancé</span>
+            <span class="ob-level-card__desc">Plus de 2 ans d'entraînement</span>
+          </button>
+        </div>
+        <div class="ob-nav">
+          <button class="btn btn--ghost ob-back" onclick="obNext(1)">← Retour</button>
+          <button class="btn btn--primary btn--xl ob-next" id="ob-next-2" onclick="obNext(3)" disabled>
+            Continuer →
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Frequency -->
+      <div class="onboarding-step" id="ob-screen-3">
+        <div class="onboarding-step__emoji"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <h2 class="onboarding-step__title">Combien de fois par semaine tu t'entraînes ?</h2>
+        <p class="onboarding-step__sub">Nous allons créer un plan réaliste adapté à ton emploi du temps.</p>
+        <div class="ob-freq-grid">
+          <button class="ob-freq-card" data-freq="1-2" onclick="selectFreq(this)">
+            <span class="ob-freq-card__num">1–2</span>
+            <span class="ob-freq-card__label">fois/semaine</span>
+            <span class="ob-freq-card__desc">Emploi du temps chargé</span>
+          </button>
+          <button class="ob-freq-card" data-freq="3-4" onclick="selectFreq(this)">
+            <span class="ob-freq-card__num">3–4</span>
+            <span class="ob-freq-card__label">fois/semaine</span>
+            <span class="ob-freq-card__desc">Régulier et progressif</span>
+          </button>
+          <button class="ob-freq-card" data-freq="5+" onclick="selectFreq(this)">
+            <span class="ob-freq-card__num">5+</span>
+            <span class="ob-freq-card__label">fois/semaine</span>
+            <span class="ob-freq-card__desc">Entraînement intensif</span>
+          </button>
+        </div>
+        <div class="ob-nav">
+          <button class="btn btn--ghost ob-back" onclick="obNext(2)">← Retour</button>
+          <button class="btn btn--primary btn--xl ob-next" id="ob-next-3" onclick="submitOnboarding()" disabled>
+            Créer mon plan →
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ── Quote popup ── -->
+  <div class="quote-overlay" id="quote-overlay">
+    <div class="quote-modal">
+      <div class="quote-modal__glow"></div>
+      <div class="quote-modal__tag">Citation du jour</div>
+      <blockquote class="quote-modal__text" id="quote-text"></blockquote>
+      <div class="quote-modal__author">
+        <div>
+          <div class="quote-modal__name" id="quote-name"></div>
+          <div class="quote-modal__sport" id="quote-sport"></div>
+        </div>
+      </div>
+      <button class="btn btn--primary btn--lg quote-modal__cta" onclick="closeQuote()">
+        ALLONS-Y →
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Celebration popup ── -->
+  <div class="celebration-overlay" id="celebration-overlay" style="display:none">
+    <div class="celebration-modal">
+      <div class="celebration-confetti" id="confetti-container"></div>
+      <div class="celebration-badge-icon" id="celebration-icon"></div>
+      <h2 class="celebration-title">Badge débloqué !</h2>
+      <div class="celebration-badge-name" id="celebration-badge-name"></div>
+      <p class="celebration-desc" id="celebration-desc"></p>
+      <button class="btn btn--primary btn--lg" onclick="closeCelebration()">
+        Continuer →
+      </button>
+    </div>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

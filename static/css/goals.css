@@ -1,0 +1,507 @@
+/* ═══════════════════════════════════════════════════════════════
+   ZAGRO — Goals & Onboarding Stylesheet
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Goals Section Layout ───────────────────────────────────── */
+.goals-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 900px;
+}
+
+/* ── Goal Header Card ────────────────────────────────────────── */
+.goal-header-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255,215,0,0.04);
+  border: 2px solid rgba(255,215,0,0.25);
+  border-left: 4px solid #FFD700;
+  border-radius: 0;
+  padding: 28px 32px;
+  box-shadow: 4px 4px 0 rgba(255,215,0,0.15);
+}
+
+.goal-header-card__icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+}
+
+.goal-header-card__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-header-card__label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-3);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.goal-header-card__name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-1);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.goal-header-card__level {
+  font-size: 0.88rem;
+  color: var(--text-2);
+}
+
+.goal-week-progress {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-ring-wrap {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.progress-ring {
+  width: 80px;
+  height: 80px;
+  transform: rotate(-90deg);
+}
+
+.progress-ring__bg {
+  fill: none;
+  stroke: var(--bg-3);
+  stroke-width: 7;
+}
+
+.progress-ring__fill {
+  fill: none;
+  stroke: url(#ringGrad);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 201;
+  stroke-dashoffset: 201;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.progress-ring__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring__pct {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-1);
+  line-height: 1;
+}
+
+.progress-ring__label {
+  font-size: 0.6rem;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.goal-motivational {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-2);
+  text-align: center;
+  max-width: 120px;
+  line-height: 1.4;
+}
+
+/* ── Workout Plan ────────────────────────────────────────────── */
+.workout-plan__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+
+.workout-days {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workout-day {
+  background: var(--bg-card);
+  border: 1px solid var(--border-2);
+  border-radius: 0;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.workout-day:hover {
+  border-color: rgba(255,215,0,0.3);
+  transform: translate(-2px, -2px);
+  box-shadow: 2px 2px 0 rgba(255,215,0,0.2);
+}
+
+.workout-day.is-done {
+  border-color: rgba(255,215,0,0.4);
+  background: rgba(255,215,0,0.03);
+  border-left: 3px solid #FFD700;
+}
+
+.workout-day__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.workout-day__check {
+  width: 26px;
+  height: 26px;
+  border-radius: 0;
+  border: 2px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--bg-3);
+  cursor: pointer;
+  color: transparent;
+}
+
+.workout-day__check:hover {
+  border-color: #FFD700;
+  transform: scale(1.15);
+  background: rgba(255,215,0,0.1);
+}
+
+.workout-day__check.checked {
+  background: #FFD700;
+  border-color: #FFD700;
+  color: #000000;
+  transform: scale(1.05);
+  box-shadow: 2px 2px 0 rgba(255,215,0,0.4);
+}
+
+.workout-day__day {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-3);
+  min-width: 60px;
+}
+
+.workout-day__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-1);
+  flex: 1;
+}
+
+.workout-day__tag {
+  padding: 3px 8px;
+  border-radius: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.workout-day__tag--force   { background: rgba(255,215,0,0.15); color: var(--orange-2); }
+.workout-day__tag--cardio  { background: rgba(255,215,0,0.15); color: var(--teal-2); }
+.workout-day__tag--hiit    { background: rgba(255,71,87,0.15);  color: var(--red); }
+.workout-day__tag--yoga    { background: rgba(123,47,190,0.15); color: var(--purple-3); }
+.workout-day__tag--repos   { background: rgba(255,255,255,0.06); color: var(--text-3); }
+.workout-day__tag--run     { background: rgba(46,204,113,0.15); color: var(--green-2); }
+
+.workout-day__toggle {
+  font-size: 0.85rem;
+  color: var(--text-3);
+  transition: transform 0.2s;
+}
+
+.workout-day.expanded .workout-day__toggle {
+  transform: rotate(180deg);
+}
+
+.workout-day__body {
+  display: none;
+  padding: 0 20px 16px;
+  border-top: 1px solid var(--border-2);
+}
+
+.workout-day.expanded .workout-day__body {
+  display: block;
+}
+
+.workout-exercises {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.exercise-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.exercise-row__icon {
+  font-size: 1.1rem;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.exercise-row__name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-1);
+  flex: 1;
+}
+
+.exercise-row__sets {
+  font-size: 0.82rem;
+  color: var(--orange-2);
+  font-weight: 700;
+  min-width: 80px;
+  text-align: right;
+}
+
+.exercise-row__rest {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  min-width: 60px;
+  text-align: right;
+}
+
+.workout-day__rest-note {
+  font-size: 0.85rem;
+  color: var(--text-3);
+  font-style: italic;
+  padding: 12px 0 0;
+}
+
+/* ── Onboarding Overlay ──────────────────────────────────────── */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 15, 0.92);
+  backdrop-filter: blur(12px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.onboarding-modal {
+  background: var(--bg-card);
+  border: 2px solid #333333;
+  border-radius: 0;
+  padding: 40px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 8px 8px 0 rgba(255,215,0,0.2);
+}
+
+/* Progress dots */
+.onboarding-progress {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 36px;
+}
+
+.onboarding-progress__step {
+  height: 4px;
+  flex: 1;
+  border-radius: 0;
+  background: var(--bg-3);
+  transition: background 0.3s;
+}
+
+.onboarding-progress__step--active {
+  background: #FFD700;
+}
+
+/* Step screens */
+.onboarding-step {
+  display: none;
+}
+
+.onboarding-step.active {
+  display: block;
+}
+
+.onboarding-step__emoji {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-step__title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.onboarding-step__sub {
+  font-size: 0.95rem;
+  color: var(--text-2);
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+
+/* Goal grid */
+.ob-goal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.ob-goal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  background: var(--bg-3);
+  border: 2px solid var(--border-2);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-family: var(--font);
+}
+
+.ob-goal-card:hover {
+  border-color: rgba(255,215,0,0.3);
+  background: var(--bg-card-2);
+  transform: translate(-2px,-2px);
+  box-shadow: 2px 2px 0 rgba(255,215,0,0.2);
+}
+
+.ob-goal-card.selected {
+  border-color: #FFD700;
+  background: rgba(255,215,0,0.08);
+  box-shadow: 3px 3px 0 #FFD700;
+}
+
+.ob-goal-card__icon { font-size: 2rem; display: flex; align-items: center; justify-content: center; }
+.ob-goal-card__name { font-size: 0.95rem; font-weight: 700; color: var(--text-1); }
+.ob-goal-card__desc { font-size: 0.78rem; color: var(--text-2); line-height: 1.4; }
+
+/* Level grid */
+.ob-level-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.ob-level-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  background: var(--bg-3);
+  border: 2px solid var(--border-2);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-family: var(--font);
+}
+
+.ob-level-card:hover { border-color: rgba(255,215,0,0.3); background: var(--bg-card-2); transform: translate(-2px,-2px); box-shadow: 2px 2px 0 rgba(255,215,0,0.2); }
+.ob-level-card.selected { border-color: #FFD700; background: rgba(255,215,0,0.08); box-shadow: 3px 3px 0 #FFD700; }
+
+.ob-level-card__icon { font-size: 1.8rem; display: flex; align-items: center; justify-content: center; }
+.ob-level-card__name { font-size: 0.95rem; font-weight: 700; color: var(--text-1); }
+.ob-level-card__desc { font-size: 0.75rem; color: var(--text-2); line-height: 1.4; }
+
+/* Frequency grid */
+.ob-freq-grid {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.ob-freq-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 12px;
+  background: var(--bg-3);
+  border: 2px solid var(--border-2);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  font-family: var(--font);
+}
+
+.ob-freq-card:hover { border-color: rgba(255,215,0,0.3); background: var(--bg-card-2); transform: translate(-2px,-2px); box-shadow: 2px 2px 0 rgba(255,215,0,0.2); }
+.ob-freq-card.selected { border-color: #FFD700; background: rgba(255,215,0,0.08); box-shadow: 3px 3px 0 #FFD700; }
+
+.ob-freq-card__num  { font-size: 2.2rem; font-weight: 900; color: var(--orange-2); letter-spacing: -1px; line-height: 1; }
+.ob-freq-card__label { font-size: 0.78rem; color: var(--text-2); }
+.ob-freq-card__desc { font-size: 0.72rem; color: var(--text-3); }
+
+/* Nav row */
+.ob-nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ob-next {
+  flex: 1;
+}
+
+.ob-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.ob-back {
+  padding: 14px 20px;
+}

@@ -1,12 +1,17 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask_dance.contrib.google import make_google_blueprint, google
 from datetime import datetime
 import bcrypt
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Allow OAuth over HTTP in development only
+if os.environ.get('FLASK_ENV') != 'production':
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'zagro-dev-secret-key-change-in-prod')
@@ -25,6 +30,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'auth'
+
+# ── Google OAuth ───────────────────────────────────────────────────
+google_bp = make_google_blueprint(
+    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
+    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
+    scope=['openid', 'https://www.googleapis.com/auth/userinfo.email',
+           'https://www.googleapis.com/auth/userinfo.profile'],
+    redirect_url='/auth/google/callback',
+)
+app.register_blueprint(google_bp, url_prefix='/auth')
 
 # ── Models ────────────────────────────────────────────────────────
 
@@ -125,6 +140,26 @@ def pricing():
 @app.route('/legal')
 def legal():
     return render_template('legal.html')
+
+@app.route('/auth/google/callback')
+def google_callback():
+    if not google.authorized:
+        return redirect(url_for('auth'))
+    resp = google.get('/oauth2/v2/userinfo')
+    if not resp.ok:
+        return redirect(url_for('auth'))
+    info = resp.json()
+    email = info.get('email', '').lower()
+    name  = info.get('name') or info.get('given_name') or email.split('@')[0]
+    if not email:
+        return redirect(url_for('auth'))
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(name=name, email=email, password_hash='')
+        db.session.add(user)
+        db.session.commit()
+    login_user(user, remember=True)
+    return redirect(url_for('dashboard'))
 
 @app.route('/logout')
 @login_required

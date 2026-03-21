@@ -33,8 +33,23 @@
         <a href="/auth" class="btn btn--ghost nav__login">Connexion</a>
         <a href="/auth" class="btn btn--primary nav__cta">Commencer gratuitement</a>
       </div>
+      <button class="nav__hamburger" id="nav-hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+
+  <!-- Mobile nav menu -->
+  <div class="nav__mobile" id="nav-mobile" role="navigation">
+    <a href="/#features" class="nav__mobile-link">Fonctionnalités</a>
+    <a href="/#how" class="nav__mobile-link">Comment ça marche</a>
+    <a href="/#coach" class="nav__mobile-link">Coach IA</a>
+    <a href="/pricing" class="nav__mobile-link" style="color:#FFD700;">Tarifs</a>
+    <div class="nav__mobile-actions">
+      <a href="/auth" class="btn btn--ghost btn--sm">Connexion</a>
+      <a href="/auth" class="btn btn--primary btn--sm">Commencer gratuitement</a>
+    </div>
+  </div>
 
   <!-- ── HERO ── -->
   <section class="pricing-hero">
@@ -122,16 +137,16 @@
         <div class="plan-card__header">
           <div class="plan-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><line x1="2" y1="9" x2="22" y2="9"/></svg></div>
           <div class="plan-name">Elite</div>
-          <div class="plan-desc">Pour les équipes et les coachs professionnels</div>
+          <div class="plan-desc">Pour ceux qui veulent aller au maximum</div>
         </div>
         <div class="plan-price">
           <span class="plan-price__amount" data-monthly="29" data-annual="23">29€</span>
           <span class="plan-price__period">/mois</span>
         </div>
-        <a href="/auth" class="btn btn--ghost plan-btn plan-btn--elite">Contacter les ventes</a>
+        <a href="/auth" class="btn btn--primary plan-btn plan-btn--elite">REJOINDRE L'ÉLITE →</a>
         <ul class="plan-features">
           <li class="plan-feature plan-feature--yes">Tout du plan Pro</li>
-          <li class="plan-feature plan-feature--yes">API access complet</li>
+          <li class="plan-feature plan-feature--yes">Analyses avancées illimitées</li>
           <li class="plan-feature plan-feature--yes">Export PDF &amp; rapports</li>
           <li class="plan-feature plan-feature--yes">Suivi multi-utilisateurs</li>
           <li class="plan-feature plan-feature--yes">Dashboard coach</li>
@@ -147,7 +162,7 @@
 
   <!-- ── FAQ ── -->
   <section class="pricing-faq">
-    <h2 class="pricing-faq__title">Questions fréquentes</h2>
+    <h2 class="pricing-faq__title">T'AS DES QUESTIONS ?</h2>
     <div class="faq-grid">
       <div class="faq-item">
         <h3>Puis-je changer de plan à tout moment ?</h3>
@@ -155,7 +170,7 @@
       </div>
       <div class="faq-item">
         <h3>Y a-t-il une période d'essai ?</h3>
-        <p>Le plan Gratuit est illimité dans le temps. Pour Pro et Elite, nous offrons 14 jours d'essai sans carte bancaire.</p>
+        <p>Le plan Gratuit est disponible sans limite de temps. Pas de carte bancaire requise pour commencer.</p>
       </div>
       <div class="faq-item">
         <h3>Mes données sont-elles sécurisées ?</h3>
@@ -173,7 +188,7 @@
     <div class="orb orb--1" style="top:-60px; left:20%; opacity:0.15; width:300px; height:300px;"></div>
     <div class="pricing-cta__content">
       <h2>Prêt à transformer tes habitudes ?</h2>
-      <p>Rejoins des milliers d'athlètes qui utilisent ZAGRO pour optimiser leur performance.</p>
+      <p>Rejoins les premiers performers ZAGRO.</p>
       <a href="/auth" class="btn btn--primary btn--xl">Commencer gratuitement →</a>
     </div>
   </section>
@@ -181,25 +196,42 @@
   <!-- ── FOOTER ── -->
   <footer class="footer">
     <div class="footer__inner">
-      <a href="/" class="footer__logo">
-        <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="28" height="28">
-          <defs>
-            <linearGradient id="zg-footer" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#00AAFF"/>
-              <stop offset="100%" stop-color="#0057FF"/>
-            </linearGradient>
-          </defs>
-          <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#zg-footer)" opacity="0.15"/>
-          <path d="M10 12 L28 12 L13 22 L30 22" stroke="url(#zg-footer)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <path d="M20 30 L20 19 M17 23 L20 19 L23 23" stroke="url(#zg-footer)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <a href="/" class="nav__logo footer__logo">
+        <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 36" width="32" height="18">
+          <defs><linearGradient id="mt-pricing-footer" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#333333"/><stop offset="100%" stop-color="#181818"/></linearGradient></defs>
+          <path d="M0,36 L0,26 L5,20 L9,24 L14,14 L17,18 L21,8 L24,12 L28,4 L32,12 L36,6 L40,14 L43,10 L47,18 L52,12 L56,20 L60,16 L64,22 L64,36 Z" fill="url(#mt-pricing-footer)"/>
+          <g transform="rotate(-8, 32, 19)"><path d="M8,10 L56,10 L8,28 L56,28" stroke="#FFFFFF" stroke-width="7" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="20" fill="none"/><path d="M8,10 L56,10 L8,28 L56,28" stroke="#FFD700" stroke-width="1.5" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="20" fill="none"/></g>
         </svg>
         <span>ZAGRO</span>
       </a>
-      <p class="footer__copy">© 2025 ZAGRO. Tous droits réservés.</p>
+      <p class="footer__copy">© 2026 ZAGRO. Tous droits réservés.</p>
     </div>
   </footer>
 
   <script>
+  // ── Hamburger nav ──────────────────────────────────────────────
+  (function() {
+    const btn  = document.getElementById('nav-hamburger');
+    const menu = document.getElementById('nav-mobile');
+    if (!btn || !menu) return;
+    function toggleMenu(open) {
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+      if (open) {
+        menu.style.display = 'flex';
+        requestAnimationFrame(() => menu.classList.add('open'));
+      } else {
+        menu.classList.remove('open');
+        setTimeout(() => { if (!menu.classList.contains('open')) menu.style.display = ''; }, 260);
+      }
+    }
+    btn.addEventListener('click', () => toggleMenu(!btn.classList.contains('open')));
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => toggleMenu(false)));
+    document.addEventListener('click', (e) => {
+      if (!btn.contains(e.target) && !menu.contains(e.target)) toggleMenu(false);
+    });
+  })();
+
     let isAnnual = false;
 
     function toggleBilling() {

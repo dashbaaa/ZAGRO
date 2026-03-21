@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="/static/css/style.css" />
   <link rel="stylesheet" href="/static/css/dashboard.css" />
   <link rel="stylesheet" href="/static/css/goals.css" />
-  <script>(function(){var t=localStorage.getItem('zagro_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -35,9 +34,9 @@
         <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
         <span>Historique</span>
       </a>
-      <a href="#insights" class="sidebar__link" data-section="insights">
+      <a href="#analyse" class="sidebar__link" data-section="analyse">
         <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
-        <span>Insights</span>
+        <span>Analyse</span>
       </a>
       <a href="#coach" class="sidebar__link" data-section="coach">
         <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg></span>
@@ -46,6 +45,20 @@
       <a href="#goals" class="sidebar__link" data-section="goals">
         <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
         <span>Objectifs</span>
+      </a>
+      <a href="#adn" class="sidebar__link" data-section="adn">
+        <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="m17 6-2.5-2.5"/><path d="m14 8-1-1"/><path d="m7 18 2.5 2.5"/><path d="m10 16 1 1"/><path d="M2 9c6.667 6 13.333 0 20 6"/></svg></span>
+        <span>Mon ADN</span>
+      </a>
+      <a href="#classement" class="sidebar__link" data-section="classement">
+        <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>
+        <span>Classement</span>
+      </a>
+
+      <div class="sidebar__section-label">LECTURES</div>
+      <a href="#lectures" class="sidebar__link" data-section="lectures">
+        <span class="sidebar__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+        <span>Mes Livres</span>
       </a>
     </nav>
 
@@ -62,11 +75,17 @@
     </div>
   </aside>
 
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar__overlay" id="sidebar-overlay"></div>
+
   <!-- ── Main ── -->
   <main class="main">
 
     <!-- Top bar -->
     <header class="topbar">
+      <button class="topbar__hamburger" id="sidebar-toggle" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
       <div class="topbar__left">
         <h1 class="topbar__title" id="section-title">Journal du jour</h1>
         <p class="topbar__date"><span id="user-greeting"></span><span id="today-date"></span></p>
@@ -226,6 +245,13 @@
         </button>
 
       </form>
+
+      <!-- Affirmations du jour -->
+      <div class="affirmations-card" id="affirmations-card" style="display:none">
+        <div class="affirmations-card__title">TES AFFIRMATIONS DU JOUR</div>
+        <ul class="affirmations-list" id="affirmations-list"></ul>
+      </div>
+
     </section>
 
     <!-- ══ SECTION : HISTORY ══ -->
@@ -279,17 +305,17 @@
       </div>
     </section>
 
-    <!-- ══ SECTION : INSIGHTS ══ -->
-    <section class="content-section" id="section-insights">
-      <div class="insights-header">
-        <p class="insights-intro">L'IA analyse les corrélations statistiques entre tes habitudes pour révéler ce qui impacte vraiment ta performance.</p>
+    <!-- ══ SECTION : ANALYSE ══ -->
+    <section class="content-section" id="section-analyse">
+      <div class="analyse-header">
+        <p class="analyse-intro">L'IA analyse les corrélations statistiques entre tes habitudes pour révéler ce qui impacte vraiment ta performance.</p>
       </div>
 
-      <div class="insights-grid" id="insights-grid">
+      <div class="analyse-grid" id="analyse-grid">
         <div class="insight-placeholder">
           <div class="placeholder-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
           <h3>Données insuffisantes</h3>
-          <p>Enregistre au moins 5 jours d'habitudes pour débloquer les insights.</p>
+          <p>Enregistre au moins 5 jours d'habitudes pour débloquer les analyses.</p>
         </div>
       </div>
 
@@ -335,7 +361,7 @@
           <div class="correlations-list" id="correlations-list"></div>
         </div>
 
-        <button class="btn refresh-btn" onclick="loadInsights()">
+        <button class="btn refresh-btn" onclick="loadAnalyse()">
           ↻ ACTUALISER L'ANALYSE
         </button>
       </div>
@@ -381,6 +407,186 @@
           <h3 class="workout-plan__title">Plan d'entraînement de la semaine</h3>
           <div class="workout-days" id="workout-days">
             <!-- Generated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══ SECTION : ADN ══ -->
+    <section class="content-section" id="section-adn">
+      <div class="dna-section">
+
+        <div class="dna-loading" id="dna-loading">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          <p>Analyse de ton ADN de performance…</p>
+        </div>
+
+        <div class="dna-insufficient" id="dna-insufficient" style="display:none">
+          <div class="dna-insufficient__icon">🧬</div>
+          <h3>Ton ADN se révèle…</h3>
+          <p class="dna-insufficient__sub">Ton ADN de performance se précise après 7 jours de données</p>
+          <div class="dna-progress-wrap">
+            <div class="dna-progress-bar">
+              <div class="dna-progress-fill" id="dna-progress-fill"></div>
+            </div>
+            <span class="dna-progress-label" id="dna-progress-label">0 / 7 jours</span>
+          </div>
+        </div>
+
+        <div class="dna-profile" id="dna-profile" style="display:none">
+          <div class="dna-layout">
+
+            <div class="dna-card" id="dna-card">
+              <div class="dna-card__tag">PERFORMANCE DNA</div>
+              <div class="dna-strand-deco" aria-hidden="true">
+                <svg width="40" height="120" viewBox="0 0 40 120" fill="none">
+                  <path d="M10 0 Q30 15 10 30 Q-10 45 10 60 Q30 75 10 90 Q-10 105 10 120" stroke="#FFD700" stroke-width="2" stroke-opacity="0.6" fill="none"/>
+                  <path d="M30 0 Q10 15 30 30 Q50 45 30 60 Q10 75 30 90 Q50 105 30 120" stroke="#FFD700" stroke-width="2" stroke-opacity="0.6" fill="none"/>
+                  <line x1="10" y1="15" x2="30" y2="15" stroke="#FFD700" stroke-width="1.5" stroke-opacity="0.4"/>
+                  <line x1="10" y1="45" x2="30" y2="45" stroke="#FFD700" stroke-width="1.5" stroke-opacity="0.4"/>
+                  <line x1="10" y1="75" x2="30" y2="75" stroke="#FFD700" stroke-width="1.5" stroke-opacity="0.4"/>
+                  <line x1="10" y1="105" x2="30" y2="105" stroke="#FFD700" stroke-width="1.5" stroke-opacity="0.4"/>
+                  <circle cx="10" cy="15" r="3" fill="#FFD700" fill-opacity="0.7"/>
+                  <circle cx="30" cy="15" r="3" fill="#FFD700" fill-opacity="0.7"/>
+                  <circle cx="10" cy="45" r="3" fill="#FFD700" fill-opacity="0.7"/>
+                  <circle cx="30" cy="45" r="3" fill="#FFD700" fill-opacity="0.7"/>
+                  <circle cx="10" cy="75" r="3" fill="#FFD700" fill-opacity="0.7"/>
+                  <circle cx="30" cy="75" r="3" fill="#FFD700" fill-opacity="0.7"/>
+                  <circle cx="10" cy="105" r="3" fill="#FFD700" fill-opacity="0.7"/>
+                  <circle cx="30" cy="105" r="3" fill="#FFD700" fill-opacity="0.7"/>
+                </svg>
+              </div>
+              <div class="dna-card__emoji" id="dna-emoji"></div>
+              <h2 class="dna-card__name" id="dna-profile-name"></h2>
+              <p class="dna-card__desc" id="dna-profile-desc"></p>
+              <div class="dna-stats-grid" id="dna-stats-grid"></div>
+            </div>
+
+            <div class="dna-radar-wrap">
+              <div class="dna-radar-title">Profil de performance</div>
+              <div class="dna-radar-container">
+                <canvas id="dna-radar-chart" width="300" height="300"></canvas>
+              </div>
+              <div class="dna-radar-labels">
+                <span>Sommeil</span><span>Sport</span><span>Eau</span><span>Humeur</span><span>Productivité</span>
+              </div>
+            </div>
+
+          </div>
+          <div class="dna-footer-msg">
+            🧬 Ton ADN de performance se précise après 7 jours de données · Recalcul hebdomadaire
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══ SECTION : CLASSEMENT ══ -->
+    <section class="content-section" id="section-classement">
+      <div class="lb-section">
+
+        <div class="lb-rank-card" id="lb-rank-card">
+          <div class="lb-rank-card__left">
+            <div class="lb-rank-label">TON RANG CETTE SEMAINE</div>
+            <div class="lb-rank-num" id="lb-my-rank">—</div>
+            <div class="lb-rank-total" id="lb-total">/ — warriors</div>
+          </div>
+          <div class="lb-rank-card__right">
+            <div class="lb-motivation" id="lb-motivation">Charge en cours…</div>
+          </div>
+        </div>
+
+        <div class="lb-filters">
+          <button class="lb-filter active" data-cat="score">Score Global</button>
+          <button class="lb-filter" data-cat="sleep">Sommeil</button>
+          <button class="lb-filter" data-cat="sport">Sport</button>
+          <button class="lb-filter" data-cat="regularity">Régularité</button>
+        </div>
+
+        <div class="lb-list" id="lb-list">
+          <div class="lb-empty">
+            <div class="loading-dots"><span></span><span></span><span></span></div>
+            <p>Chargement du classement…</p>
+          </div>
+        </div>
+
+        <div class="lb-week-footer">
+          Semaine <span id="lb-week-key">—</span> · Mis à jour quotidiennement à minuit
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══ SECTION : LECTURES ══ -->
+    <section class="content-section" id="section-lectures">
+      <div class="books-section">
+
+        <!-- Goal bar -->
+        <div class="books-goal-card">
+          <div class="books-goal-card__left">
+            <div class="books-goal-card__label">MON OBJECTIF ANNUEL</div>
+            <div class="books-goal-card__value">
+              <span id="books-done-count">0</span> / <span id="books-goal-display">12</span> livres
+            </div>
+            <div class="books-goal-progress-wrap">
+              <div class="books-goal-progress-bar">
+                <div class="books-goal-progress-fill" id="books-goal-fill"></div>
+              </div>
+              <span class="books-goal-pct" id="books-goal-pct">0%</span>
+            </div>
+          </div>
+          <div class="books-goal-card__right">
+            <input type="number" id="book-goal-input" class="books-goal-input" min="1" max="200" value="12" />
+            <button class="btn btn--sm" onclick="saveBookGoal()">Modifier</button>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="books-stats-row" id="books-stats-row">
+          <div class="books-stat">
+            <div class="books-stat__num" id="bstat-done">0</div>
+            <div class="books-stat__label">Terminés</div>
+          </div>
+          <div class="books-stat">
+            <div class="books-stat__num" id="bstat-pages">0</div>
+            <div class="books-stat__label">Pages lues</div>
+          </div>
+          <div class="books-stat">
+            <div class="books-stat__num" id="bstat-avg">0</div>
+            <div class="books-stat__label">Livres / mois</div>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="books-filters">
+          <button class="books-filter active" data-filter="all">Tous</button>
+          <button class="books-filter" data-filter="en_cours">En cours</button>
+          <button class="books-filter" data-filter="termine">Terminés</button>
+          <button class="books-filter" data-filter="a_lire">À lire</button>
+        </div>
+
+        <!-- Add book form -->
+        <div class="book-add-form" id="book-add-form">
+          <div class="book-add-form__title">+ AJOUTER UN LIVRE</div>
+          <div class="book-add-form__fields">
+            <input type="text" id="book-title" placeholder="Titre *" class="book-input" />
+            <input type="text" id="book-author" placeholder="Auteur" class="book-input" />
+            <input type="number" id="book-pages" placeholder="Pages totales" class="book-input" min="0" />
+            <select id="book-status" class="book-input book-select">
+              <option value="a_lire">À lire</option>
+              <option value="en_cours">En cours</option>
+              <option value="termine">Terminé</option>
+            </select>
+          </div>
+          <button class="btn btn--primary" onclick="addBook()">Ajouter →</button>
+        </div>
+
+        <!-- Books grid -->
+        <div class="books-grid" id="books-grid">
+          <div class="books-empty" id="books-empty">
+            <div class="books-empty__icon">📚</div>
+            <p>Aucun livre pour l'instant. Ajoute ton premier livre !</p>
           </div>
         </div>
 

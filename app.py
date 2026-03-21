@@ -4,10 +4,22 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from datetime import datetime
 import bcrypt
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'zagro-dev-secret-key-change-in-prod')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(os.path.dirname(__file__), 'data', 'zagro.db')
+
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Railway uses postgres:// but SQLAlchemy requires postgresql://
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(os.path.dirname(__file__), 'data', 'zagro.db')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -28,8 +40,10 @@ class User(UserMixin, db.Model):
     level         = db.Column(db.String(20),  default=None)   # 'debutant', 'intermediaire', 'avance'
     training_freq = db.Column(db.String(10),  default=None)   # '1-2', '3-4', '5+'
     onboarding_done = db.Column(db.Boolean,  default=False)
+    book_goal  = db.Column(db.Integer, default=12)
     habits     = db.relationship('Habit', backref='user', lazy=True, cascade='all, delete-orphan')
     badges     = db.relationship('Badge', backref='user', lazy=True, cascade='all, delete-orphan')
+    books      = db.relationship('Book', backref='user', lazy=True, cascade='all, delete-orphan')
 
 class Habit(db.Model):
     __tablename__ = 'habits'
@@ -48,6 +62,32 @@ class Badge(db.Model):
     user_id     = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     badge_type  = db.Column(db.String(50), nullable=False)
     unlocked_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Book(db.Model):
+    __tablename__ = 'books'
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title       = db.Column(db.String(200), nullable=False)
+    author      = db.Column(db.String(200), nullable=False, default='')
+    status      = db.Column(db.String(20), nullable=False, default='a_lire')  # en_cours / termine / a_lire
+    pages_total = db.Column(db.Integer, nullable=False, default=0)
+    pages_read  = db.Column(db.Integer, nullable=False, default=0)
+    rating      = db.Column(db.Integer, nullable=True)
+    notes       = db.Column(db.Text, nullable=True)
+    started_at  = db.Column(db.String(10), nullable=True)
+    finished_at = db.Column(db.String(10), nullable=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+class WeeklyScore(db.Model):
+    __tablename__ = 'weekly_scores'
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    week_key      = db.Column(db.String(10), nullable=False)
+    score         = db.Column(db.Integer, nullable=False, default=0)
+    score_sleep   = db.Column(db.Integer, nullable=False, default=0)
+    score_sport   = db.Column(db.Integer, nullable=False, default=0)
+    score_regular = db.Column(db.Integer, nullable=False, default=0)
+    updated_at    = db.Column(db.DateTime, default=datetime.utcnow)
 
 class WorkoutCheck(db.Model):
     __tablename__ = 'workout_checks'
@@ -81,6 +121,10 @@ def auth():
 @app.route('/pricing')
 def pricing():
     return render_template('pricing.html')
+
+@app.route('/legal')
+def legal():
+    return render_template('legal.html')
 
 @app.route('/logout')
 @login_required
@@ -207,17 +251,166 @@ def add_habit():
     db.session.commit()
     return jsonify({'status': 'ok', 'entry': _habit_dict(habit)})
 
-@app.route('/api/insights', methods=['GET'])
+@app.route('/api/analyse', methods=['GET'])
 @login_required
-def get_insights():
+def get_analyse():
     habits = Habit.query.filter_by(user_id=current_user.id).order_by(Habit.date).all()
     data = [_habit_dict(h) for h in habits]
     if len(data) < 3:
-        return jsonify({'insights': [], 'coach': "Commence à enregistrer tes habitudes pour recevoir des insights personnalisés !", 'score': None})
-    insights = compute_correlations(data)
+        return jsonify({'analyse': [], 'coach': "Commence à enregistrer tes habitudes pour recevoir des analyses personnalisées !", 'score': None})
+    analyses = compute_correlations(data)
     coach_msg = generate_coach_message(data, goal=current_user.goal)
     score = compute_weekly_score(data)
-    return jsonify({'insights': insights, 'coach': coach_msg, 'score': score})
+    return jsonify({'analyse': analyses, 'coach': coach_msg, 'score': score})
+
+@app.route('/api/dna')
+@login_required
+def get_dna():
+    habits = Habit.query.filter_by(user_id=current_user.id).order_by(Habit.date).all()
+    data = [_habit_dict(h) for h in habits]
+    if len(data) < 3:
+        return jsonify({'error': 'insufficient_data', 'days': len(data)})
+    result = compute_dna_profile(data)
+    return jsonify(result)
+
+@app.route('/api/leaderboard')
+@login_required
+def get_leaderboard():
+    week_key = get_current_week_key()
+
+    # Compute and upsert current user's scores
+    user_habits = Habit.query.filter_by(user_id=current_user.id).order_by(Habit.date).all()
+    if user_habits:
+        data = [_habit_dict(h) for h in user_habits]
+        score = compute_weekly_score(data)
+        last7 = data[-7:]
+        if score is not None and last7:
+            n7 = len(last7)
+            def slp_sc(avg):
+                if 7 <= avg <= 9: return 100
+                elif 6 <= avg < 7 or 9 < avg <= 10: return 60
+                else: return 20
+            s_sleep   = round(slp_sc(sum(d['sleep'] for d in last7) / n7))
+            s_sport   = round(sum(1 for d in last7 if d['sport']) / n7 * 100)
+            s_regular = round(n7 / 7 * 100)
+            ws = WeeklyScore.query.filter_by(user_id=current_user.id, week_key=week_key).first()
+            if ws:
+                ws.score = score; ws.score_sleep = s_sleep
+                ws.score_sport = s_sport; ws.score_regular = s_regular
+                ws.updated_at = datetime.utcnow()
+            else:
+                ws = WeeklyScore(user_id=current_user.id, week_key=week_key,
+                                 score=score, score_sleep=s_sleep,
+                                 score_sport=s_sport, score_regular=s_regular)
+                db.session.add(ws)
+            db.session.commit()
+
+    cat = request.args.get('category', 'score')
+    score_attr = {'score': 'score', 'sleep': 'score_sleep', 'sport': 'score_sport', 'regularity': 'score_regular'}.get(cat, 'score')
+    all_scores = WeeklyScore.query.filter_by(week_key=week_key).order_by(getattr(WeeklyScore, score_attr).desc()).all()
+    total = len(all_scores)
+    current_rank = None
+    ranked = []
+    for rank, ws in enumerate(all_scores, 1):
+        if ws.user_id == current_user.id:
+            current_rank = rank
+        ranked.append({
+            'rank': rank,
+            'warrior_name': f"Warrior #{rank}",
+            'score': getattr(ws, score_attr),
+            'is_current_user': ws.user_id == current_user.id,
+        })
+
+    if current_rank and total > 1:
+        pct = current_rank / total
+        if pct <= 0.1:   motivation = "Tu es dans l'élite ZAGRO 🏆"
+        elif pct <= 0.5: motivation = "Continue, tu progresses bien"
+        else:            motivation = "Chaque jour est une opportunité de grimper"
+    else:
+        motivation = "Continue à logger pour rejoindre le classement !"
+
+    return jsonify({
+        'leaderboard': ranked[:10],
+        'current_rank': current_rank,
+        'total_users': total,
+        'motivation': motivation,
+        'week_key': week_key,
+    })
+
+@app.route('/api/books', methods=['GET'])
+@login_required
+def get_books():
+    books = Book.query.filter_by(user_id=current_user.id).order_by(Book.created_at.desc()).all()
+    return jsonify({
+        'books': [_book_dict(b) for b in books],
+        'goal': current_user.book_goal or 12,
+    })
+
+@app.route('/api/books', methods=['POST'])
+@login_required
+def add_book():
+    data = request.get_json()
+    book = Book(
+        user_id=current_user.id,
+        title=data.get('title', '').strip(),
+        author=data.get('author', '').strip(),
+        status=data.get('status', 'a_lire'),
+        pages_total=int(data.get('pages_total', 0)),
+        pages_read=int(data.get('pages_read', 0)),
+        rating=data.get('rating'),
+        notes=data.get('notes', ''),
+        started_at=data.get('started_at'),
+        finished_at=data.get('finished_at'),
+    )
+    if not book.title:
+        return jsonify({'error': 'Titre requis'}), 400
+    db.session.add(book)
+    db.session.commit()
+    return jsonify({'ok': True, 'book': _book_dict(book)})
+
+@app.route('/api/books/<int:book_id>', methods=['PUT'])
+@login_required
+def update_book(book_id):
+    book = Book.query.filter_by(id=book_id, user_id=current_user.id).first_or_404()
+    data = request.get_json()
+    if 'title' in data:       book.title       = data['title'].strip()
+    if 'author' in data:      book.author      = data['author'].strip()
+    if 'status' in data:      book.status      = data['status']
+    if 'pages_total' in data: book.pages_total = int(data['pages_total'])
+    if 'pages_read' in data:  book.pages_read  = int(data['pages_read'])
+    if 'rating' in data:      book.rating      = data['rating']
+    if 'notes' in data:       book.notes       = data['notes']
+    if 'started_at' in data:  book.started_at  = data['started_at']
+    if 'finished_at' in data: book.finished_at = data['finished_at']
+    db.session.commit()
+    return jsonify({'ok': True, 'book': _book_dict(book)})
+
+@app.route('/api/books/<int:book_id>', methods=['DELETE'])
+@login_required
+def delete_book(book_id):
+    book = Book.query.filter_by(id=book_id, user_id=current_user.id).first_or_404()
+    db.session.delete(book)
+    db.session.commit()
+    return jsonify({'ok': True})
+
+@app.route('/api/books/goal', methods=['POST'])
+@login_required
+def set_book_goal():
+    data = request.get_json()
+    goal = int(data.get('goal', 12))
+    current_user.book_goal = max(1, goal)
+    db.session.commit()
+    return jsonify({'ok': True, 'goal': current_user.book_goal})
+
+def _book_dict(b):
+    return {
+        'id': b.id, 'title': b.title, 'author': b.author,
+        'status': b.status, 'pages_total': b.pages_total,
+        'pages_read': b.pages_read, 'rating': b.rating,
+        'notes': b.notes, 'started_at': b.started_at,
+        'finished_at': b.finished_at,
+        'created_at': b.created_at.isoformat() if b.created_at else None,
+    }
 
 @app.route('/api/badges', methods=['GET'])
 @login_required
@@ -264,7 +457,7 @@ def pearson(xs, ys):
     return num / den if den else 0
 
 def compute_correlations(data):
-    insights = []
+    analyses = []
     recent = data[-30:]
     sleep  = [d['sleep'] for d in recent]
     sport  = [1 if d['sport'] else 0 for d in recent]
@@ -291,10 +484,10 @@ def compute_correlations(data):
             continue
         direction = 'positive' if r > 0 else 'negative'
         msg = pos_msg if r > 0 else neg_msg
-        insights.append({'message': msg, 'correlation': round(r, 2), 'strength': 'forte' if strength > 0.6 else 'modérée', 'direction': direction, 'x': xk, 'y': yk})
+        analyses.append({'message': msg, 'correlation': round(r, 2), 'strength': 'forte' if strength > 0.6 else 'modérée', 'direction': direction, 'x': xk, 'y': yk})
 
-    insights.sort(key=lambda i: abs(i['correlation']), reverse=True)
-    return insights[:5]
+    analyses.sort(key=lambda i: abs(i['correlation']), reverse=True)
+    return analyses[:5]
 
 def compute_weekly_score(data):
     last7 = data[-7:]
@@ -347,6 +540,71 @@ def generate_coach_message(data, goal=None):
         lines.append(goal_advice[goal])
     return " ".join(lines)
 
+def get_current_week_key():
+    iso = datetime.utcnow().isocalendar()
+    return f"{iso[0]}-W{iso[1]:02d}"
+
+def compute_dna_profile(data):
+    if not data:
+        return None
+    n = len(data)
+    sleep_avg  = sum(d['sleep'] for d in data) / n
+    sport_rate = sum(1 for d in data if d['sport']) / n
+    water_avg  = sum(d['water'] for d in data) / n
+    mood_avg   = sum(d['mood'] for d in data) / n
+    prod_avg   = sum(d['productivity'] for d in data) / n
+
+    def sleep_score(avg):
+        if 7 <= avg <= 9: return 100
+        elif 6 <= avg < 7: return 60 + (avg - 6) * 40
+        elif 9 < avg <= 10: return 100 - (avg - 9) * 40
+        elif avg < 6: return max(0, avg / 6 * 60)
+        else: return max(0, 60 - (avg - 10) * 30)
+
+    radar = {
+        'sommeil':      round(sleep_score(sleep_avg)),
+        'sport':        round(sport_rate * 100),
+        'hydratation':  round(min(water_avg / 3.0, 1.0) * 100),
+        'humeur':       round(mood_avg * 10),
+        'productivite': round(prod_avg * 10),
+    }
+
+    if all(v >= 70 for v in radar.values()):
+        profile = 'balanced'
+    elif mood_avg >= 7.5 and prod_avg >= 7.5:
+        profile = 'mental'
+    elif sport_rate >= 0.7 and water_avg >= 2.0:
+        profile = 'endurance'
+    elif sleep_avg >= 7.5 and prod_avg >= 7.0:
+        profile = 'morning'
+    elif sleep_avg < 6.5 and prod_avg >= 7.0:
+        profile = 'night'
+    else:
+        profile = 'recovering'
+
+    profiles = {
+        'morning':   {'name': 'MORNING WARRIOR',    'emoji': '🌅', 'color': '#FFD700', 'desc': "Tu maximises ton sommeil pour performer. Tu attaques la journée avec énergie. Le repos est ton arme secrète."},
+        'night':     {'name': 'NIGHT MACHINE',       'emoji': '⚡', 'color': '#FF9500', 'desc': "Tu fonctionnes différemment — moins de sommeil, performance qui reste haute. Ton corps s'est adapté."},
+        'endurance': {'name': 'ENDURANCE BEAST',     'emoji': '🦁', 'color': '#FFD700', 'desc': "Tu es la machine qui ne s'arrête pas. Sport quotidien, hydratation au top — le carburant parfait."},
+        'mental':    {'name': 'MENTAL CHAMPION',     'emoji': '🧠', 'color': '#FFD700', 'desc': "Ton atout c'est l'esprit. Humeur et productivité au top — tu maîtrises ton état intérieur."},
+        'recovering':{'name': 'RECOVERING ATHLETE',  'emoji': '🔄', 'color': '#FF3333', 'desc': "Tu es en phase de reconstruction. Irrégularité détectée — concentre-toi sur la constance avant la performance."},
+        'balanced':  {'name': 'BALANCED PERFORMER',  'emoji': '⚖️', 'color': '#FFD700', 'desc': "Tu as trouvé l'équilibre parfait. Toutes tes métriques sont au vert — la performance durable par la cohérence."},
+    }
+
+    return {
+        'profile': profile,
+        'profile_data': profiles[profile],
+        'radar': radar,
+        'averages': {
+            'sleep': round(sleep_avg, 1),
+            'sport_rate': round(sport_rate * 100),
+            'water': round(water_avg, 1),
+            'mood': round(mood_avg, 1),
+            'prod': round(prod_avg, 1),
+        },
+        'days': n,
+    }
+
 # ── DB Init ───────────────────────────────────────────────────────
 
 with app.app_context():
@@ -362,10 +620,20 @@ with app.app_context():
             ("training_freq",   "VARCHAR(10)  DEFAULT NULL"),
             ("onboarding_done", "BOOLEAN      DEFAULT 0"),
         ]
+        migrations = migrations + [("book_goal", "INTEGER DEFAULT 12")]
         for col, definition in migrations:
             if col not in existing:
                 conn.execute(db.text(f"ALTER TABLE users ADD COLUMN {col} {definition}"))
         conn.commit()
 
+        # Migrate weekly_scores table
+        ws_cols = [row[1] for row in conn.execute(db.text("PRAGMA table_info(weekly_scores)")).fetchall()]
+        for col, defn in [('score_sleep','INTEGER DEFAULT 0'),('score_sport','INTEGER DEFAULT 0'),('score_regular','INTEGER DEFAULT 0')]:
+            if ws_cols and col not in ws_cols:
+                conn.execute(db.text(f"ALTER TABLE weekly_scores ADD COLUMN {col} {defn}"))
+        conn.commit()
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    is_production = os.environ.get('FLASK_ENV') == 'production'
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=not is_production, host='0.0.0.0', port=port)

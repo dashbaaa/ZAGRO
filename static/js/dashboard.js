@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    ZAGRO — Dashboard JS
-   Handles: navigation, form, charts, insights, coach
+   Handles: navigation, form, charts, analyse, coach
 ═══════════════════════════════════════════════════════════════ */
 
 'use strict';
@@ -273,11 +273,47 @@ function initTheme() {
   document.documentElement.setAttribute('data-theme', saved);
 }
 
+// ── Mobile sidebar toggle ─────────────────────────────────────────
+function setupMobileSidebar() {
+  const toggle   = document.getElementById('sidebar-toggle');
+  const sidebar  = document.querySelector('.sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  if (!toggle || !sidebar || !overlay) return;
+
+  function openSidebar()  {
+    sidebar.classList.add('open');
+    overlay.classList.add('active');
+    toggle.classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+    toggle.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  toggle.addEventListener('click', () =>
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar()
+  );
+  overlay.addEventListener('click', closeSidebar);
+
+  // Close on nav link click (mobile)
+  sidebar.querySelectorAll('.sidebar__link').forEach(link =>
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) closeSidebar();
+    })
+  );
+}
+
 // ── Init ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   setupDate();
   setupNav();
+  setupMobileSidebar();
   setupForm();
   loadUserProfile().then(() => {
     if (userProfile && !userProfile.onboarding_done) {
@@ -292,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkTodayLogged();
         updateStreak();
         renderHistory(currentPeriod);
-        loadInsights();
+        loadAnalyse();
         updateSidebarScore();
         updateQuickStats();
       });
@@ -323,11 +359,14 @@ function setupNav() {
   const links = document.querySelectorAll('.sidebar__link');
   const sections = document.querySelectorAll('.content-section');
   const titles = {
-    log:      'Journal du jour',
-    history:  'Historique',
-    insights: 'Insights & Corrélations',
-    coach:    'Coach IA',
-    goals:    'Mes Objectifs',
+    log:         'Journal du jour',
+    history:     'Historique',
+    analyse:     'Analyse & Corrélations',
+    coach:       'Coach IA',
+    goals:       'Mes Objectifs',
+    adn:         'Mon ADN de Performance',
+    classement:  'Classement Warriors',
+    lectures:    'Suivi de Lecture',
   };
 
   links.forEach((link) => {
@@ -344,8 +383,11 @@ function setupNav() {
       document.getElementById('section-title').textContent = titles[target] || '';
 
       if (target === 'history') renderHistory(currentPeriod);
-      if (target === 'insights') renderInsightCards();
-      if (target === 'coach') loadInsights();
+      if (target === 'analyse') renderAnalyseCards();
+      if (target === 'coach') loadAnalyse();
+      if (target === 'adn') loadDNA();
+      if (target === 'classement') loadLeaderboard();
+      if (target === 'lectures') loadBooks();
     });
   });
 
@@ -483,6 +525,7 @@ async function submitForm(e) {
       updateSidebarScore();
       showToast('Habitudes enregistrées avec succès !');
       document.getElementById('already-logged').style.display = 'flex';
+      showDailyAffirmations();
     }
   } catch (err) {
     showToast('Erreur lors de l\'enregistrement');
@@ -499,6 +542,7 @@ function checkTodayLogged() {
 
   if (entry) {
     banner.style.display = 'flex';
+    showDailyAffirmations();
     // Pre-fill form
     document.getElementById('sleep').value = entry.sleep;
     document.getElementById('sleep-display').textContent = `${entry.sleep}h`;
@@ -657,7 +701,7 @@ function spawnConfetti() {
 
 // ── Sidebar score ─────────────────────────────────────────────────
 function updateSidebarScore() {
-  fetch('/api/insights')
+  fetch('/api/analyse')
     .then((r) => r.json())
     .then((data) => {
       const score = data.score;
@@ -846,14 +890,14 @@ function renderSportCalendar(data) {
   });
 }
 
-// ── Insights ─────────────────────────────────────────────────────
-let cachedInsights = null;
+// ── Analyse ──────────────────────────────────────────────────────
+let cachedAnalyse = null;
 
-async function loadInsights() {
+async function loadAnalyse() {
   try {
-    const res = await fetch('/api/insights');
+    const res = await fetch('/api/analyse');
     const data = await res.json();
-    cachedInsights = data;
+    cachedAnalyse = data;
 
     // Update score ring
     if (data.score !== null && data.score !== undefined) {
@@ -873,9 +917,9 @@ async function loadInsights() {
     // Correlations in coach
     const coachCorr = document.getElementById('coach-correlations');
     const corrList  = document.getElementById('correlations-list');
-    if (data.insights && data.insights.length) {
+    if (data.analyse && data.analyse.length) {
       coachCorr.style.display = 'block';
-      corrList.innerHTML = data.insights.map((ins) => `
+      corrList.innerHTML = data.analyse.map((ins) => `
         <div class="corr-item">
           <div class="corr-item__dot corr-item__dot--${ins.direction}"></div>
           <div class="corr-item__msg">${ins.message}</div>
@@ -886,27 +930,27 @@ async function loadInsights() {
       coachCorr.style.display = 'none';
     }
 
-    renderInsightCards();
+    renderAnalyseCards();
   } catch (err) {
     const msgEl = document.getElementById('coach-message');
     msgEl.innerHTML = '<p style="color:var(--text-3)">Impossible de charger l\'analyse. Vérifie que le serveur est démarré.</p>';
   }
 }
 
-function renderInsightCards() {
-  const grid = document.getElementById('insights-grid');
-  if (!cachedInsights || !cachedInsights.insights || !cachedInsights.insights.length) {
+function renderAnalyseCards() {
+  const grid = document.getElementById('analyse-grid');
+  if (!cachedAnalyse || !cachedAnalyse.analyse || !cachedAnalyse.analyse.length) {
     grid.innerHTML = `
       <div class="insight-placeholder">
         <div class="placeholder-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
         <h3>Données insuffisantes</h3>
-        <p>Enregistre au moins 5 jours d'habitudes pour débloquer les insights.</p>
+        <p>Enregistre au moins 5 jours d'habitudes pour débloquer les analyses.</p>
       </div>`;
     document.getElementById('correlation-section').style.display = 'none';
     return;
   }
 
-  grid.innerHTML = cachedInsights.insights.map((ins) => `
+  grid.innerHTML = cachedAnalyse.analyse.map((ins) => `
     <div class="insight-card">
       <div class="insight-card__top">
         <div class="insight-card__dir insight-card__dir--${ins.direction}">
@@ -1243,4 +1287,597 @@ window.addEventListener('resize', () => {
   resizeTimer = setTimeout(() => {
     if (habits.length) renderHistory(currentPeriod);
   }, 200);
+});
+
+// ── DNA Profile ───────────────────────────────────────────────────
+let _dnaRadarChart = null;
+
+async function loadDNA() {
+  document.getElementById('dna-loading').style.display = 'flex';
+  document.getElementById('dna-insufficient').style.display = 'none';
+  document.getElementById('dna-profile').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/dna');
+    const data = await res.json();
+
+    document.getElementById('dna-loading').style.display = 'none';
+
+    if (data.error === 'insufficient_data') {
+      document.getElementById('dna-insufficient').style.display = 'block';
+      const days = data.days || 0;
+      document.getElementById('dna-progress-fill').style.width = `${Math.min(days / 7 * 100, 100)}%`;
+      document.getElementById('dna-progress-label').textContent = `${days} / 7 jours`;
+      return;
+    }
+
+    document.getElementById('dna-profile').style.display = 'block';
+    document.getElementById('dna-emoji').textContent = data.profile_data.emoji;
+    document.getElementById('dna-profile-name').textContent = data.profile_data.name;
+    document.getElementById('dna-profile-desc').textContent = data.profile_data.desc;
+
+    // Apply profile color accent
+    const card = document.getElementById('dna-card');
+    card.style.borderTopColor = data.profile_data.color;
+
+    // Stats grid
+    const stats = [
+      { label: 'Sommeil moy.', value: `${data.averages.sleep}h` },
+      { label: 'Sport',        value: `${data.averages.sport_rate}%` },
+      { label: 'Eau moy.',     value: `${data.averages.water}L` },
+      { label: 'Humeur moy.',  value: `${data.averages.mood}/10` },
+      { label: 'Prod. moy.',   value: `${data.averages.prod}/10` },
+      { label: 'Jours loggés', value: data.days },
+    ];
+    document.getElementById('dna-stats-grid').innerHTML = stats.map(s => `
+      <div class="dna-stat">
+        <div class="dna-stat__val">${s.value}</div>
+        <div class="dna-stat__label">${s.label}</div>
+      </div>
+    `).join('');
+
+    // Radar chart
+    const canvas = document.getElementById('dna-radar-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    if (_dnaRadarChart) { _dnaRadarChart.destroy(); _dnaRadarChart = null; }
+
+    const r = data.radar;
+    _dnaRadarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ['Sommeil', 'Sport', 'Hydratation', 'Humeur', 'Productivité'],
+        datasets: [{
+          data: [r.sommeil, r.sport, r.hydratation, r.humeur, r.productivite],
+          backgroundColor: 'rgba(255,215,0,0.12)',
+          borderColor: '#FFD700',
+          borderWidth: 2,
+          pointBackgroundColor: '#FFD700',
+          pointBorderColor: '#000',
+          pointBorderWidth: 1,
+          pointRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: {
+          backgroundColor: 'rgba(10,10,10,0.9)',
+          titleColor: '#FFD700',
+          bodyColor: '#999',
+          borderColor: 'rgba(255,215,0,0.3)',
+          borderWidth: 1,
+          callbacks: { label: ctx => ` ${ctx.raw}/100` },
+        }},
+        scales: {
+          r: {
+            min: 0, max: 100,
+            ticks: { display: false, stepSize: 25 },
+            grid: { color: 'rgba(255,215,0,0.08)' },
+            angleLines: { color: 'rgba(255,215,0,0.15)' },
+            pointLabels: {
+              color: '#999999',
+              font: { size: 11, weight: '600', family: 'Inter, sans-serif' },
+            },
+          },
+        },
+      },
+    });
+
+  } catch (err) {
+    document.getElementById('dna-loading').style.display = 'none';
+    document.getElementById('dna-insufficient').style.display = 'block';
+    document.getElementById('dna-progress-label').textContent = 'Erreur de chargement';
+  }
+}
+
+// ── Leaderboard ────────────────────────────────────────────────────
+let _currentLbCategory = 'score';
+
+async function loadLeaderboard(category) {
+  if (category) _currentLbCategory = category;
+  const cat = _currentLbCategory;
+
+  const listEl = document.getElementById('lb-list');
+  listEl.innerHTML = '<div class="lb-empty"><div class="loading-dots"><span></span><span></span><span></span></div><p>Chargement…</p></div>';
+
+  try {
+    const res = await fetch(`/api/leaderboard?category=${cat}`);
+    const data = await res.json();
+
+    // Rank card
+    document.getElementById('lb-my-rank').textContent = data.current_rank ? `#${data.current_rank}` : '—';
+    document.getElementById('lb-total').textContent = `/ ${data.total_users} warrior${data.total_users > 1 ? 's' : ''}`;
+    document.getElementById('lb-motivation').textContent = data.motivation;
+    document.getElementById('lb-week-key').textContent = data.week_key;
+
+    // List
+    if (!data.leaderboard || !data.leaderboard.length) {
+      listEl.innerHTML = '<div class="lb-empty"><p>Aucun warrior classé cette semaine.<br>Commence à logger pour rejoindre le classement !</p></div>';
+      return;
+    }
+
+    const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+    listEl.innerHTML = data.leaderboard.map(entry => {
+      const medal = medals[entry.rank] || '';
+      const isMine = entry.is_current_user;
+      const pct = entry.score;
+      return `
+        <div class="lb-row${isMine ? ' lb-row--mine' : ''}">
+          <div class="lb-row__rank">${medal || entry.rank}</div>
+          <div class="lb-row__name">${entry.warrior_name}${isMine ? ' <span class="lb-you">TOI</span>' : ''}</div>
+          <div class="lb-row__score-wrap">
+            <div class="lb-row__bar">
+              <div class="lb-row__bar-fill" style="width:${pct}%"></div>
+            </div>
+            <div class="lb-row__score">${entry.score}<span class="lb-row__max">/100</span></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  } catch (err) {
+    listEl.innerHTML = '<div class="lb-empty"><p>Impossible de charger le classement.</p></div>';
+  }
+}
+
+// Wire leaderboard filter buttons
+document.querySelectorAll('.lb-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lb-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadLeaderboard(btn.dataset.cat);
+  });
+});
+
+// ── AFFIRMATIONS ──────────────────────────────────────────────────
+
+const AFFIRMATIONS = {
+  masse: [
+    "Je construis mon corps chaque jour, une répétition à la fois.",
+    "Chaque séance me rapproche de la version la plus forte de moi-même.",
+    "Je nourris mes muscles avec discipline et constance.",
+    "Mon corps est une machine que j'affûte chaque jour.",
+    "La croissance musculaire est le résultat de mes efforts quotidiens.",
+    "Je suis en train de sculpter mon physique idéal.",
+    "Chaque repas, chaque entraînement me construit.",
+    "Ma force augmente chaque semaine parce que je montre au présent.",
+    "Je respecte mon corps en le poussant à se dépasser.",
+    "La prise de masse demande de la patience — je suis patient et déterminé.",
+    "Je mange, je dors, je m'entraîne — je suis la masse.",
+    "Mon progrès physique reflète mon engagement mental.",
+    "Chaque kilo gagné est une victoire que je mérite.",
+    "Je suis plus fort aujourd'hui qu'hier.",
+    "Le muscle ne ment pas — il récompense le travail.",
+    "Je construis non seulement des muscles, mais du caractère.",
+    "Chaque effort en salle est un investissement dans mon futur moi.",
+    "La masse se construit dans la cuisine autant qu'en salle.",
+    "Je suis discipliné, constant, invincible.",
+    "Mon physique raconte l'histoire de mes sacrifices.",
+    "Je ne compte pas les reps — je les ressens.",
+  ],
+  poids: [
+    "Je brûle les graisses avec chaque pas, chaque choix.",
+    "Mon corps se transforme parce que ma mentalité s'est transformée.",
+    "Je choisis la santé à chaque repas.",
+    "La balance bouge parce que je bouge.",
+    "Je suis plus léger, plus rapide, plus libre.",
+    "Chaque effort cardio me libère un peu plus.",
+    "Je respecte mon corps en lui donnant ce dont il a besoin.",
+    "La perte de poids est un voyage, pas une destination.",
+    "Je suis constant dans mes efforts — les résultats suivent.",
+    "Chaque jour de discipline me rapproche de mon objectif.",
+    "Je brûle plus que des calories — je brûle mes limites.",
+    "Mon énergie augmente chaque semaine.",
+    "Je choisis les escaliers, l'eau, le mouvement.",
+    "Je transforme ma silhouette avec patience et détermination.",
+    "Mon métabolisme est mon allié quand je le respecte.",
+    "Je suis fier de chaque gramme perdu.",
+    "La légèreté physique libère aussi l'esprit.",
+    "Je mange pour vivre mieux, pas pour compenser.",
+    "Je visualise mon corps dans 3 mois — je travaille pour ça.",
+    "Chaque sueur est une victoire.",
+    "La santé est ma priorité numéro un.",
+  ],
+  endurance: [
+    "Je vais plus loin aujourd'hui qu'hier.",
+    "Mon souffle s'améliore, mes jambes se renforcent.",
+    "Je suis fait pour aller loin.",
+    "Chaque foulée me rend plus fort.",
+    "L'endurance se construit dans l'inconfort — j'embrasse l'inconfort.",
+    "Mon cœur est un moteur que j'entraîne chaque jour.",
+    "Je repousse mes limites aérobies avec constance.",
+    "La distance n'est qu'un chiffre — mon mental décide.",
+    "Je cours, je nage, je pédale vers ma meilleure version.",
+    "L'effort d'aujourd'hui est la facilité de demain.",
+    "Je suis un athlète d'endurance en construction permanente.",
+    "Chaque kilomètre est une médaille invisible.",
+    "Ma respiration se synchronise avec ma détermination.",
+    "Je dépasse mes records personnels une séance à la fois.",
+    "L'endurance, c'est ma superforce.",
+    "Je m'hydrate, je récupère, je recommence.",
+    "Mon corps s'adapte et se renforce à chaque effort.",
+    "Je cours même quand c'est dur — surtout quand c'est dur.",
+    "La constance crée les athlètes que tout le monde admire.",
+    "Je suis à l'aise dans l'inconfort.",
+    "Chaque entraînement repousse mon plafond.",
+  ],
+  bienetre: [
+    "Je prends soin de mon esprit autant que de mon corps.",
+    "La paix intérieure est ma vraie performance.",
+    "Je mérite le repos et la sérénité.",
+    "Ma santé mentale est ma priorité.",
+    "Je respire profondément et je lâche prise.",
+    "Chaque moment de pleine conscience me régénère.",
+    "Je suis aligné entre ce que je pense, ressens et fais.",
+    "La gratitude transforme ma perception du monde.",
+    "Je choisis la sérénité dans chaque situation.",
+    "Mon bien-être rayonne autour de moi.",
+    "Je m'accorde le droit de ralentir pour mieux avancer.",
+    "La méditation est mon entraînement invisible.",
+    "Je suis présent, conscient, en paix.",
+    "Chaque bonne nuit de sommeil est un cadeau à mon cerveau.",
+    "Je nourris mon esprit avec des pensées positives.",
+    "L'équilibre est ma vraie force.",
+    "Je ris, j'aime, je vis pleinement.",
+    "Mon état d'esprit détermine la qualité de mes journées.",
+    "Je suis la source de ma propre énergie positive.",
+    "Le stress est temporaire — ma paix intérieure est permanente.",
+    "Je construis un esprit fort pour un corps fort.",
+  ],
+  sleep_bad: [
+    "Je respecte mon sommeil — il me rend plus fort.",
+    "Ce soir, je dors bien. Mon corps et mon cerveau ont besoin de récupérer.",
+    "Le sommeil est mon entraînement nocturne.",
+    "Je prépare mes nuits pour performer le jour.",
+    "Chaque heure de sommeil est un investissement dans ma performance.",
+    "Je coupe les écrans plus tôt ce soir — demain je serai au top.",
+    "Mon repos est aussi important que mon effort.",
+    "La récupération est la partie du programme que j'honore enfin.",
+    "Je protège mes nuits comme je protège mes séances.",
+    "Dormir, c'est gagner.",
+    "Je m'endors avec l'intention de me réveiller transformé.",
+    "Ma fatigue d'aujourd'hui sera ma force de demain.",
+    "Le sommeil construit les muscles que l'entraînement déchire.",
+    "J'ai besoin de 8 heures — je me les accorde.",
+    "Chaque nuit réparatrice me rapproche de mon objectif.",
+    "Je suis discipliné même dans mon sommeil.",
+    "Mon lit est mon alié, pas l'ennemi.",
+    "Ce soir, j'honore mon corps en lui donnant le repos qu'il mérite.",
+    "Le champion dort bien. Je suis ce champion.",
+    "Je bâtis des habitudes de sommeil solides.",
+    "La qualité de mes nuits définit la qualité de mes jours.",
+  ],
+  streak: [
+    "Je suis constant — la constance crée les champions.",
+    "Ma régularité est mon super-pouvoir.",
+    "Un jour de plus dans ma série — je suis inarrêtable.",
+    "Chaque jour loggé est une brique dans mon édifice.",
+    "La constance bat le talent chaque fois.",
+    "Je brise les cycles de lâcher — je maintiens le cap.",
+    "Ma discipline parle pour moi.",
+    "Je ne suis pas parfait, mais je suis présent — chaque jour.",
+    "La série continue parce que j'ai décidé qu'elle continue.",
+    "Le succès est une habitude — j'en suis la preuve.",
+    "Je montre au présent, tous les jours, sans exception.",
+    "Ma constance me différencie de la masse.",
+    "Je construis quelque chose d'exceptionnel, un jour à la fois.",
+    "La régularité est le secret que personne ne veut entendre.",
+    "Je suis fidèle à mes engagements envers moi-même.",
+    "Chaque journée enregistrée est une victoire sur la procrastination.",
+    "Je suis l'athlète de ma propre vie.",
+    "La discipline n'est pas une contrainte — c'est ma liberté.",
+    "Je bâtis une vie extraordinaire à coups de jours ordinaires.",
+    "Ma série reflète qui je suis vraiment.",
+    "Je ne rate jamais deux fois de suite.",
+  ],
+  default: [
+    "Je suis capable de plus que je ne le crois.",
+    "Chaque effort compte, même les petits.",
+    "Je progresse. Lentement peut-être, mais sûrement.",
+    "Je suis l'architecte de ma propre transformation.",
+    "Ma meilleure version est en train d'émerger.",
+    "Je choisis la croissance chaque jour.",
+    "Je suis plus fort qu'hier.",
+    "Mes actions définissent qui je deviens.",
+    "Je construis quelque chose de grand.",
+    "La transformation est en cours — je lui fais confiance.",
+    "Je suis engagé envers moi-même.",
+    "Le meilleur investissement, c'est moi-même.",
+    "Je suis dans le processus — et le processus fonctionne.",
+    "Chaque jour est une nouvelle opportunité de progresser.",
+    "Je prends soin de moi avec rigueur et bienveillance.",
+    "Ma vie change parce que mes habitudes changent.",
+    "Je suis sur la bonne voie.",
+    "Je ne compare pas mon chapitre 1 au chapitre 20 des autres.",
+    "Je suis fier de mon chemin parcouru.",
+    "La version de moi de demain remercie mes efforts d'aujourd'hui.",
+    "Je suis digne de mon propre respect.",
+  ],
+};
+
+function pickAffirmation(pool, seed) {
+  return pool[((seed % pool.length) + pool.length) % pool.length];
+}
+
+function showDailyAffirmations() {
+  const card = document.getElementById('affirmations-card');
+  const list = document.getElementById('affirmations-list');
+  if (!card || !list) return;
+
+  const today = todayStr();
+  const dateSeed = today.split('-').reduce((a, c) => a * 31 + parseInt(c, 10), 7);
+
+  // Determine last 7 days of habits
+  const last7 = habits.slice(-7);
+  const avgSleep = last7.length
+    ? last7.reduce((s, h) => s + h.sleep, 0) / last7.length
+    : 8;
+  const streak = computeStreak();
+
+  const selected = [];
+
+  // Affirmation 1: goal-based
+  const goal = userProfile && userProfile.goal;
+  const goalPool = AFFIRMATIONS[goal] || AFFIRMATIONS.default;
+  selected.push(pickAffirmation(goalPool, dateSeed));
+
+  // Affirmation 2: sleep-based if sleep is bad, else streak
+  if (avgSleep < 6.5) {
+    selected.push(pickAffirmation(AFFIRMATIONS.sleep_bad, dateSeed + 1));
+  } else if (streak >= 3) {
+    selected.push(pickAffirmation(AFFIRMATIONS.streak, dateSeed + 1));
+  } else {
+    selected.push(pickAffirmation(AFFIRMATIONS.default, dateSeed + 1));
+  }
+
+  // Affirmation 3: streak-based or default
+  if (streak >= 7) {
+    selected.push(pickAffirmation(AFFIRMATIONS.streak, dateSeed + 2));
+  } else {
+    selected.push(pickAffirmation(AFFIRMATIONS.default, dateSeed + 2));
+  }
+
+  // Deduplicate (shouldn't happen often but just in case)
+  const unique = [...new Set(selected)];
+  while (unique.length < 3) unique.push(pickAffirmation(AFFIRMATIONS.default, dateSeed + unique.length + 10));
+
+  list.innerHTML = unique.slice(0, 3).map(text =>
+    `<li class="affirmation-item">${text}</li>`
+  ).join('');
+
+  card.style.display = 'block';
+}
+
+// ── BOOKS ─────────────────────────────────────────────────────────
+
+let _books = [];
+let _bookFilter = 'all';
+let _bookGoal = 12;
+
+async function loadBooks() {
+  try {
+    const res = await fetch('/api/books');
+    const data = await res.json();
+    _books = data.books || [];
+    _bookGoal = data.goal || 12;
+    document.getElementById('book-goal-input').value = _bookGoal;
+    renderBooks();
+  } catch (e) {
+    console.error('loadBooks error', e);
+  }
+}
+
+function renderBooks() {
+  const done = _books.filter(b => b.status === 'termine');
+  const pagesRead = _books.reduce((s, b) => s + (b.pages_read || 0), 0);
+  const pct = _bookGoal > 0 ? Math.min(100, Math.round((done.length / _bookGoal) * 100)) : 0;
+
+  document.getElementById('books-done-count').textContent = done.length;
+  document.getElementById('books-goal-display').textContent = _bookGoal;
+  document.getElementById('books-goal-fill').style.width = pct + '%';
+  document.getElementById('books-goal-pct').textContent = pct + '%';
+
+  document.getElementById('bstat-done').textContent = done.length;
+  document.getElementById('bstat-pages').textContent = pagesRead.toLocaleString('fr-FR');
+
+  // Avg per month: months since first book
+  let avgPerMonth = 0;
+  if (done.length > 0) {
+    const oldest = _books.reduce((min, b) => b.created_at < min ? b.created_at : min, _books[0].created_at);
+    const months = Math.max(1, Math.ceil((Date.now() - new Date(oldest).getTime()) / (1000 * 60 * 60 * 24 * 30)));
+    avgPerMonth = (done.length / months).toFixed(1);
+  }
+  document.getElementById('bstat-avg').textContent = avgPerMonth;
+
+  const filtered = _bookFilter === 'all' ? _books : _books.filter(b => b.status === _bookFilter);
+
+  const grid = document.getElementById('books-grid');
+  const empty = document.getElementById('books-empty');
+
+  if (!filtered.length) {
+    empty.style.display = 'flex';
+    // Remove old cards (keep the empty element)
+    grid.querySelectorAll('.book-card').forEach(el => el.remove());
+    return;
+  }
+  empty.style.display = 'none';
+  grid.querySelectorAll('.book-card').forEach(el => el.remove());
+
+  filtered.forEach(book => {
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    card.dataset.id = book.id;
+
+    const pagePct = book.pages_total > 0 ? Math.min(100, Math.round((book.pages_read / book.pages_total) * 100)) : 0;
+    const statusLabel = { en_cours: 'EN COURS', termine: 'TERMINÉ', a_lire: 'À LIRE' }[book.status] || book.status;
+    const statusClass = { en_cours: 'book-status--en-cours', termine: 'book-status--termine', a_lire: 'book-status--a-lire' }[book.status] || '';
+    const stars = book.rating ? '★'.repeat(book.rating) + '☆'.repeat(5 - book.rating) : '☆☆☆☆☆';
+    const initials = book.title.charAt(0).toUpperCase();
+
+    card.innerHTML = `
+      <div class="book-card__cover">${initials}</div>
+      <div class="book-card__content">
+        <div class="book-card__header">
+          <div>
+            <div class="book-card__title">${book.title}</div>
+            <div class="book-card__author">${book.author || 'Auteur inconnu'}</div>
+          </div>
+          <span class="book-status ${statusClass}">${statusLabel}</span>
+        </div>
+        ${book.pages_total > 0 ? `
+        <div class="book-card__progress">
+          <div class="book-card__progress-bar">
+            <div class="book-card__progress-fill" style="width:${pagePct}%"></div>
+          </div>
+          <span class="book-card__progress-label">${book.pages_read} / ${book.pages_total} pages (${pagePct}%)</span>
+        </div>` : ''}
+        <div class="book-card__footer">
+          <div class="book-card__rating" title="Note">${stars}</div>
+          ${book.notes ? `<div class="book-card__notes">${book.notes}</div>` : ''}
+        </div>
+        <div class="book-card__actions">
+          <button class="book-btn" onclick="openEditBook(${book.id})">Modifier</button>
+          <button class="book-btn book-btn--danger" onclick="deleteBook(${book.id})">Supprimer</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+async function addBook() {
+  const title = document.getElementById('book-title').value.trim();
+  const author = document.getElementById('book-author').value.trim();
+  const pages = parseInt(document.getElementById('book-pages').value) || 0;
+  const status = document.getElementById('book-status').value;
+
+  if (!title) { showToast('Le titre est requis'); return; }
+
+  try {
+    const res = await fetch('/api/books', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, author, pages_total: pages, status }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('book-title').value = '';
+      document.getElementById('book-author').value = '';
+      document.getElementById('book-pages').value = '';
+      document.getElementById('book-status').value = 'a_lire';
+      showToast('Livre ajouté !');
+      await loadBooks();
+    }
+  } catch { showToast('Erreur lors de l\'ajout'); }
+}
+
+async function deleteBook(id) {
+  if (!confirm('Supprimer ce livre ?')) return;
+  try {
+    await fetch(`/api/books/${id}`, { method: 'DELETE' });
+    showToast('Livre supprimé');
+    await loadBooks();
+  } catch { showToast('Erreur'); }
+}
+
+function openEditBook(id) {
+  const book = _books.find(b => b.id === id);
+  if (!book) return;
+
+  const pages = book.pages_total || 0;
+  const pagesRead = book.pages_read || 0;
+  const rating = book.rating || 0;
+
+  const modal = document.createElement('div');
+  modal.className = 'book-edit-modal';
+  modal.innerHTML = `
+    <div class="book-edit-modal__box">
+      <h3 class="book-edit-modal__title">Modifier le livre</h3>
+      <input type="text" id="edit-title" class="book-input" value="${book.title}" placeholder="Titre" />
+      <input type="text" id="edit-author" class="book-input" value="${book.author || ''}" placeholder="Auteur" />
+      <select id="edit-status" class="book-input book-select">
+        <option value="a_lire" ${book.status === 'a_lire' ? 'selected' : ''}>À lire</option>
+        <option value="en_cours" ${book.status === 'en_cours' ? 'selected' : ''}>En cours</option>
+        <option value="termine" ${book.status === 'termine' ? 'selected' : ''}>Terminé</option>
+      </select>
+      <input type="number" id="edit-pages-total" class="book-input" value="${pages}" placeholder="Pages totales" min="0" />
+      <input type="number" id="edit-pages-read" class="book-input" value="${pagesRead}" placeholder="Pages lues" min="0" />
+      <input type="number" id="edit-rating" class="book-input" value="${rating}" placeholder="Note /5" min="0" max="5" />
+      <textarea id="edit-notes" class="book-input book-textarea" placeholder="Notes...">${book.notes || ''}</textarea>
+      <div class="book-edit-modal__btns">
+        <button class="btn btn--primary" onclick="saveEditBook(${id})">Sauvegarder</button>
+        <button class="btn btn--ghost" onclick="this.closest('.book-edit-modal').remove()">Annuler</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function saveEditBook(id) {
+  const payload = {
+    title: document.getElementById('edit-title').value.trim(),
+    author: document.getElementById('edit-author').value.trim(),
+    status: document.getElementById('edit-status').value,
+    pages_total: parseInt(document.getElementById('edit-pages-total').value) || 0,
+    pages_read: parseInt(document.getElementById('edit-pages-read').value) || 0,
+    rating: parseInt(document.getElementById('edit-rating').value) || null,
+    notes: document.getElementById('edit-notes').value.trim(),
+  };
+  try {
+    await fetch(`/api/books/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    document.querySelector('.book-edit-modal').remove();
+    showToast('Livre mis à jour !');
+    await loadBooks();
+  } catch { showToast('Erreur'); }
+}
+
+async function saveBookGoal() {
+  const goal = parseInt(document.getElementById('book-goal-input').value) || 12;
+  try {
+    await fetch('/api/books/goal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goal }),
+    });
+    _bookGoal = goal;
+    showToast(`Objectif mis à jour : ${goal} livres`);
+    renderBooks();
+  } catch { showToast('Erreur'); }
+}
+
+// Wire book filters
+document.querySelectorAll('.books-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.books-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _bookFilter = btn.dataset.filter;
+    renderBooks();
+  });
 });

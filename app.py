@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_dance.contrib.google import make_google_blueprint, google
@@ -12,6 +13,7 @@ load_dotenv()
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '0'
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'zagro-dev-secret-key-change-in-prod')
 
 database_url = os.environ.get('DATABASE_URL')
@@ -28,6 +30,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'auth'
+
+@app.before_request
+def log_request():
+    if '/auth/google' in request.url:
+        app.logger.info(f"Request URL: {request.url}")
+        app.logger.info(f"Request headers: {dict(request.headers)}")
 
 # ── Google OAuth ───────────────────────────────────────────────────
 google_bp = make_google_blueprint(

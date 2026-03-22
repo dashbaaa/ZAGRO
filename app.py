@@ -180,6 +180,24 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+@app.route('/profile')
+@login_required
+def profile():
+    return redirect(url_for('dashboard'))
+
+@app.route('/api/profile', methods=['PUT'])
+@login_required
+def api_update_profile():
+    data = request.get_json(force=True, silent=True) or {}
+    name = (data.get('name') or '').strip()
+    goal = data.get('goal')
+    if name:
+        current_user.name = name
+    if goal in ('masse', 'poids', 'endurance', 'bienetre', ''):
+        current_user.goal = goal or None
+    db.session.commit()
+    return jsonify({'ok': True, 'name': current_user.name.title()})
+
 @app.errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
@@ -205,7 +223,7 @@ def api_register():
     db.session.add(user)
     db.session.commit()
     login_user(user, remember=True)
-    return jsonify({'ok': True, 'name': user.name})
+    return jsonify({'ok': True, 'name': user.name.title()})
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
@@ -218,13 +236,13 @@ def api_login():
         return jsonify({'error': 'Email ou mot de passe incorrect.'}), 401
 
     login_user(user, remember=True)
-    return jsonify({'ok': True, 'name': user.name})
+    return jsonify({'ok': True, 'name': user.name.title()})
 
 @app.route('/api/me')
 @login_required
 def api_me():
     return jsonify({
-        'name': current_user.name,
+        'name': current_user.name.title(),
         'email': current_user.email,
         'plan': current_user.plan,
         'goal': current_user.goal,
@@ -305,11 +323,11 @@ def get_analyse():
     habits = Habit.query.filter_by(user_id=current_user.id).order_by(Habit.date).all()
     data = [_habit_dict(h) for h in habits]
     if len(data) < 3:
-        return jsonify({'analyse': [], 'coach': "Commence à enregistrer tes habitudes pour recevoir des analyses personnalisées !", 'score': None})
+        return jsonify({'analyse': [], 'coach': "Commence à enregistrer tes habitudes pour recevoir des analyses personnalisées !", 'score': None, 'days_logged': len(data)})
     analyses = compute_correlations(data)
     coach_msg = generate_coach_message(data, goal=current_user.goal)
     score = compute_weekly_score(data)
-    return jsonify({'analyse': analyses, 'coach': coach_msg, 'score': score})
+    return jsonify({'analyse': analyses, 'coach': coach_msg, 'score': score, 'days_logged': len(data)})
 
 @app.route('/api/dna')
 @login_required

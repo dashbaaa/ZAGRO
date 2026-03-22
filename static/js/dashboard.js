@@ -367,6 +367,7 @@ function setupNav() {
     adn:         'Mon ADN de Performance',
     classement:  'Classement Warriors',
     lectures:    'Suivi de Lecture',
+    profile:     'Mon Profil',
   };
 
   links.forEach((link) => {
@@ -388,6 +389,7 @@ function setupNav() {
       if (target === 'adn') loadDNA();
       if (target === 'classement') loadLeaderboard();
       if (target === 'lectures') loadBooks();
+      if (target === 'profile') loadProfile();
     });
   });
 
@@ -908,11 +910,28 @@ async function loadAnalyse() {
 
     // Coach message
     const msgEl = document.getElementById('coach-message');
-    msgEl.innerHTML = '';
-    const p = document.createElement('p');
-    p.textContent = data.coach;
-    p.style.lineHeight = '1.85';
-    msgEl.appendChild(p);
+    if (data.score === null) {
+      const daysLogged = data.days_logged ?? 0;
+      const pct = Math.min(100, Math.round((daysLogged / 3) * 100));
+      msgEl.innerHTML = `
+        <div class="coach-empty">
+          <div class="coach-empty__avatar">🤖</div>
+          <div class="coach-empty__title">TON COACH DORT ENCORE...</div>
+          <div class="coach-empty__sub">Enregistre tes 3 premiers jours pour le réveiller.</div>
+          <div class="coach-empty__progress-wrap">
+            <div class="coach-empty__progress-bar">
+              <div class="coach-empty__progress-fill" style="width:${pct}%"></div>
+            </div>
+            <div class="coach-empty__progress-label">${daysLogged} / 3 jours</div>
+          </div>
+        </div>`;
+    } else {
+      msgEl.innerHTML = '';
+      const p = document.createElement('p');
+      p.textContent = data.coach;
+      p.style.lineHeight = '1.85';
+      msgEl.appendChild(p);
+    }
 
     // Correlations in coach
     const coachCorr = document.getElementById('coach-correlations');
@@ -940,11 +959,49 @@ async function loadAnalyse() {
 function renderAnalyseCards() {
   const grid = document.getElementById('analyse-grid');
   if (!cachedAnalyse || !cachedAnalyse.analyse || !cachedAnalyse.analyse.length) {
+    const daysLogged = cachedAnalyse?.days_logged ?? 0;
+    const remaining = Math.max(0, 5 - daysLogged);
+    const motiv = remaining > 0
+      ? `Encore <strong>${remaining}</strong> jour${remaining > 1 ? 's' : ''} avant de débloquer tes premières insights.`
+      : 'Continue à enregistrer tes habitudes !';
     grid.innerHTML = `
       <div class="insight-placeholder">
         <div class="placeholder-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
-        <h3>Données insuffisantes</h3>
-        <p>Enregistre au moins 5 jours d'habitudes pour débloquer les analyses.</p>
+        <h3>DONNÉES INSUFFISANTES</h3>
+        <p>${motiv}</p>
+      </div>
+      <div class="insight-card insight-card--preview">
+        <div class="insight-card__top">
+          <div class="insight-card__dir insight-card__dir--positive">↑</div>
+          <div class="insight-card__msg">Sommeil → Productivité</div>
+        </div>
+        <div class="insight-card__foot">
+          <div class="corr-bar"><div class="corr-fill corr-fill--positive" style="width:75%"></div></div>
+          <span class="corr-val">r = 0.75</span>
+          <span class="corr-strength corr-strength--forte">forte</span>
+        </div>
+      </div>
+      <div class="insight-card insight-card--preview">
+        <div class="insight-card__top">
+          <div class="insight-card__dir insight-card__dir--positive">↑</div>
+          <div class="insight-card__msg">Sport → Humeur du lendemain</div>
+        </div>
+        <div class="insight-card__foot">
+          <div class="corr-bar"><div class="corr-fill corr-fill--positive" style="width:62%"></div></div>
+          <span class="corr-val">r = 0.62</span>
+          <span class="corr-strength corr-strength--moderee">modérée</span>
+        </div>
+      </div>
+      <div class="insight-card insight-card--preview">
+        <div class="insight-card__top">
+          <div class="insight-card__dir insight-card__dir--positive">↑</div>
+          <div class="insight-card__msg">Score de performance global</div>
+        </div>
+        <div class="insight-card__foot">
+          <div class="corr-bar"><div class="corr-fill corr-fill--positive" style="width:55%"></div></div>
+          <span class="corr-val">r = 0.55</span>
+          <span class="corr-strength corr-strength--moderee">modérée</span>
+        </div>
       </div>`;
     document.getElementById('correlation-section').style.display = 'none';
     return;
@@ -1767,11 +1824,24 @@ function renderBooks() {
   });
 }
 
+function openBookModal() {
+  document.getElementById('book-modal-overlay').style.display = 'flex';
+}
+
+function closeBookModal(e) {
+  if (e && e.target !== document.getElementById('book-modal-overlay')) return;
+  document.getElementById('book-modal-overlay').style.display = 'none';
+  document.getElementById('modal-book-title').value = '';
+  document.getElementById('modal-book-author').value = '';
+  document.getElementById('modal-book-pages').value = '';
+  document.getElementById('modal-book-status').value = 'a_lire';
+}
+
 async function addBook() {
-  const title = document.getElementById('book-title').value.trim();
-  const author = document.getElementById('book-author').value.trim();
-  const pages = parseInt(document.getElementById('book-pages').value) || 0;
-  const status = document.getElementById('book-status').value;
+  const title = document.getElementById('modal-book-title').value.trim();
+  const author = document.getElementById('modal-book-author').value.trim();
+  const pages = parseInt(document.getElementById('modal-book-pages').value) || 0;
+  const status = document.getElementById('modal-book-status').value;
 
   if (!title) { showToast('Le titre est requis'); return; }
 
@@ -1783,10 +1853,11 @@ async function addBook() {
     });
     const data = await res.json();
     if (data.ok) {
-      document.getElementById('book-title').value = '';
-      document.getElementById('book-author').value = '';
-      document.getElementById('book-pages').value = '';
-      document.getElementById('book-status').value = 'a_lire';
+      document.getElementById('book-modal-overlay').style.display = 'none';
+      document.getElementById('modal-book-title').value = '';
+      document.getElementById('modal-book-author').value = '';
+      document.getElementById('modal-book-pages').value = '';
+      document.getElementById('modal-book-status').value = 'a_lire';
       showToast('Livre ajouté !');
       await loadBooks();
     }
@@ -1870,6 +1941,39 @@ async function saveBookGoal() {
     showToast(`Objectif mis à jour : ${goal} livres`);
     renderBooks();
   } catch { showToast('Erreur'); }
+}
+
+// ── Profile ───────────────────────────────────────────────────────
+function loadProfile() {
+  if (!userProfile) return;
+  document.getElementById('profile-name-input').value = userProfile.name || '';
+  document.getElementById('profile-email-input').value = userProfile.email || '';
+  document.getElementById('profile-goal-select').value = userProfile.goal || '';
+  document.getElementById('profile-display-name').textContent = userProfile.name || '—';
+  document.getElementById('profile-email-label').textContent = userProfile.email || '—';
+  const initials = (userProfile.name || '?').charAt(0).toUpperCase();
+  document.getElementById('profile-avatar-initials').textContent = initials;
+}
+
+async function saveProfile() {
+  const name = document.getElementById('profile-name-input').value.trim();
+  const goal = document.getElementById('profile-goal-select').value;
+  if (!name) { showToast('Le nom ne peut pas être vide'); return; }
+  try {
+    const res = await fetch('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, goal }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      userProfile.name = data.name;
+      userProfile.goal = goal;
+      setUserGreeting(data.name);
+      loadProfile();
+      showToast('Profil mis à jour !');
+    }
+  } catch { showToast('Erreur lors de la sauvegarde'); }
 }
 
 // Wire book filters

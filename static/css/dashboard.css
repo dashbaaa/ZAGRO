@@ -1544,6 +1544,9 @@ canvas { display: block; width: 100% !important; }
   text-align: center;
   flex-shrink: 0;
 }
+.lb-rank--top1 { color: #FFD700; }
+.lb-rank--top2 { color: #C0C0C0; }
+.lb-rank--top3 { color: #CD7F32; }
 
 .lb-row__name {
   flex: 1;

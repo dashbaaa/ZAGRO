@@ -389,7 +389,7 @@ def get_leaderboard():
 
     if current_rank and total > 1:
         pct = current_rank / total
-        if pct <= 0.1:   motivation = "Tu es dans l'élite ZAGRO 🏆"
+        if pct <= 0.1:   motivation = "Tu es dans l'élite ZAGRO — top 10%"
         elif pct <= 0.5: motivation = "Continue, tu progresses bien"
         else:            motivation = "Chaque jour est une opportunité de grimper"
     else:
@@ -532,13 +532,13 @@ def compute_correlations(data):
     prod   = [d['productivity'] for d in recent]
 
     pairs = [
-        (sleep, mood,  'sleep', 'mood',  "Plus tu dors, meilleure est ton humeur 😴", "Le sommeil semble peu lié à ton humeur dans tes données."),
-        (sleep, prod,  'sleep', 'prod',  "Un bon sommeil booste ta productivité 🚀", "Le sommeil n'impacte pas encore visiblement ta productivité."),
-        (sport, mood,  'sport', 'mood',  "Le sport améliore significativement ton humeur 💪", "Le sport n'a pas encore d'effet notable sur ton humeur."),
-        (sport, prod,  'sport', 'prod',  "Faire du sport les jours de productivité élevée est un pattern récurrent ⚡", "Pas de corrélation claire entre sport et productivité pour l'instant."),
-        (water, mood,  'water', 'mood',  "Une bonne hydratation est associée à une meilleure humeur 💧", "L'hydratation ne semble pas encore affecter ton humeur."),
-        (water, prod,  'water', 'prod',  "Boire plus d'eau est lié à une productivité accrue 💧", "L'hydratation et la productivité ne sont pas encore corrélées."),
-        (mood,  prod,  'mood',  'prod',  "Ton humeur et ta productivité évoluent souvent ensemble 🔗", "Humeur et productivité semblent indépendantes dans tes données."),
+        (sleep, mood,  'sleep', 'mood',  "Plus tu dors, meilleure est ton humeur", "Le sommeil semble peu lié à ton humeur dans tes données."),
+        (sleep, prod,  'sleep', 'prod',  "Un bon sommeil booste ta productivité", "Le sommeil n'impacte pas encore visiblement ta productivité."),
+        (sport, mood,  'sport', 'mood',  "Le sport améliore significativement ton humeur", "Le sport n'a pas encore d'effet notable sur ton humeur."),
+        (sport, prod,  'sport', 'prod',  "Faire du sport les jours de productivité élevée est un pattern récurrent", "Pas de corrélation claire entre sport et productivité pour l'instant."),
+        (water, mood,  'water', 'mood',  "Une bonne hydratation est associée à une meilleure humeur", "L'hydratation ne semble pas encore affecter ton humeur."),
+        (water, prod,  'water', 'prod',  "Boire plus d'eau est lié à une productivité accrue", "L'hydratation et la productivité ne sont pas encore corrélées."),
+        (mood,  prod,  'mood',  'prod',  "Ton humeur et ta productivité évoluent souvent ensemble", "Humeur et productivité semblent indépendantes dans tes données."),
     ]
 
     for xs, ys, xk, yk, pos_msg, neg_msg in pairs:
@@ -582,25 +582,25 @@ def generate_coach_message(data, goal=None):
     avg_mood = sum(d['mood'] for d in last7) / len(last7)
     avg_prod = sum(d['productivity'] for d in last7) / len(last7)
     lines = []
-    if avg_sleep < 6.5: lines.append(f"⚠️ Tu dors en moyenne {avg_sleep:.1f}h — c'est insuffisant. Vise 7-8h pour booster ton énergie et ta concentration.")
-    elif avg_sleep > 9.5: lines.append(f"😴 Tu dors {avg_sleep:.1f}h en moyenne. Un excès de sommeil peut indiquer de la fatigue chronique — vérifie ta qualité de nuit.")
-    else: lines.append(f"✅ Ton sommeil est bien réglé à {avg_sleep:.1f}h en moyenne. Continue ainsi !")
-    if sport_days == 0: lines.append("🏃 Aucune séance de sport cette semaine. Même 20 minutes de marche font une différence énorme sur l'humeur et la productivité.")
-    elif sport_days <= 2: lines.append(f"💪 {sport_days} séance(s) de sport sur 7 jours. Essaie d'atteindre 3-4 séances pour sentir un vrai changement.")
-    else: lines.append(f"🔥 {sport_days} séances de sport cette semaine — excellent ! Tu crées une habitude solide.")
-    if avg_water < 1.5: lines.append(f"💧 Tu bois seulement {avg_water:.1f}L par jour. La déshydratation impacte directement ta concentration — vise 2L minimum.")
-    elif avg_water >= 2.5: lines.append(f"💧 Super hydratation à {avg_water:.1f}L/jour — ton cerveau te remercie !")
-    else: lines.append(f"💧 Hydratation correcte à {avg_water:.1f}L. Une petite bouteille de plus et tu es au top.")
-    if avg_mood < 5: lines.append(f"🧠 Ton humeur moyenne est basse ({avg_mood:.1f}/10). Fais attention aux signaux de burnout.")
-    elif avg_mood >= 8: lines.append(f"😊 Humeur excellente cette semaine ({avg_mood:.1f}/10) — capitalise sur cet élan !")
-    if avg_prod >= 8: lines.append(f"⚡ Productivité au top ({avg_prod:.1f}/10) ! Identifie ce qui a fonctionné et répète-le.")
-    elif avg_prod < 5: lines.append(f"📉 Productivité en berne ({avg_prod:.1f}/10). Regarde tes nuits et ton activité physique.")
+    if avg_sleep < 6.5: lines.append(f"SOMMEIL — Tu dors en moyenne {avg_sleep:.1f}h : c'est insuffisant. Vise 7-8h pour booster ton énergie et ta concentration.")
+    elif avg_sleep > 9.5: lines.append(f"SOMMEIL — Tu dors {avg_sleep:.1f}h en moyenne. Un excès de sommeil peut indiquer de la fatigue chronique — vérifie ta qualité de nuit.")
+    else: lines.append(f"SOMMEIL — Bien réglé à {avg_sleep:.1f}h en moyenne. Continue ainsi !")
+    if sport_days == 0: lines.append("SPORT — Aucune séance cette semaine. Même 20 minutes de marche font une différence énorme sur l'humeur et la productivité.")
+    elif sport_days <= 2: lines.append(f"SPORT — {sport_days} séance(s) sur 7 jours. Essaie d'atteindre 3-4 séances pour sentir un vrai changement.")
+    else: lines.append(f"SPORT — {sport_days} séances cette semaine — excellent ! Tu crées une habitude solide.")
+    if avg_water < 1.5: lines.append(f"HYDRATATION — Tu bois seulement {avg_water:.1f}L par jour. La déshydratation impacte directement ta concentration — vise 2L minimum.")
+    elif avg_water >= 2.5: lines.append(f"HYDRATATION — Super à {avg_water:.1f}L/jour — ton cerveau te remercie !")
+    else: lines.append(f"HYDRATATION — Correcte à {avg_water:.1f}L. Une petite bouteille de plus et tu es au top.")
+    if avg_mood < 5: lines.append(f"HUMEUR — Moyenne basse ({avg_mood:.1f}/10). Fais attention aux signaux de burnout.")
+    elif avg_mood >= 8: lines.append(f"HUMEUR — Excellente cette semaine ({avg_mood:.1f}/10) — capitalise sur cet élan !")
+    if avg_prod >= 8: lines.append(f"PRODUCTIVITÉ — Au top ({avg_prod:.1f}/10) ! Identifie ce qui a fonctionné et répète-le.")
+    elif avg_prod < 5: lines.append(f"PRODUCTIVITÉ — En berne ({avg_prod:.1f}/10). Regarde tes nuits et ton activité physique.")
     # Goal-specific advice
     goal_advice = {
-        'masse':     f"🏋️ Pour ta prise de masse : assure-toi de dormir au moins 8h et de bien t'hydrater — la synthèse protéique se fait pendant le sommeil.",
-        'poids':     f"🔥 Pour ta perte de poids : le déficit calorique compte, mais le sommeil régule la ghréline (hormone de la faim). Priorise tes nuits.",
-        'endurance': f"🏃 Pour ton endurance : les séances longues nécessitent {2.0:.1f}L+ d'eau. Hydrate-toi avant, pendant et après.",
-        'bienetre':  f"🧘 Pour ton bien-être : l'humeur est ton KPI principal. Continue à identifier ce qui te met dans un état positif.",
+        'masse':     f"OBJECTIF MASSE — Assure-toi de dormir au moins 8h et de bien t'hydrater — la synthèse protéique se fait pendant le sommeil.",
+        'poids':     f"OBJECTIF POIDS — Le déficit calorique compte, mais le sommeil régule la ghréline (hormone de la faim). Priorise tes nuits.",
+        'endurance': f"OBJECTIF ENDURANCE — Les séances longues nécessitent {2.0:.1f}L+ d'eau. Hydrate-toi avant, pendant et après.",
+        'bienetre':  f"OBJECTIF BIEN-ÊTRE — L'humeur est ton KPI principal. Continue à identifier ce qui te met dans un état positif.",
     }
     if goal and goal in goal_advice:
         lines.append(goal_advice[goal])
@@ -649,12 +649,12 @@ def compute_dna_profile(data):
         profile = 'recovering'
 
     profiles = {
-        'morning':   {'name': 'MORNING WARRIOR',    'emoji': '🌅', 'color': '#FFD700', 'desc': "Tu maximises ton sommeil pour performer. Tu attaques la journée avec énergie. Le repos est ton arme secrète."},
-        'night':     {'name': 'NIGHT MACHINE',       'emoji': '⚡', 'color': '#FF9500', 'desc': "Tu fonctionnes différemment — moins de sommeil, performance qui reste haute. Ton corps s'est adapté."},
-        'endurance': {'name': 'ENDURANCE BEAST',     'emoji': '🦁', 'color': '#FFD700', 'desc': "Tu es la machine qui ne s'arrête pas. Sport quotidien, hydratation au top — le carburant parfait."},
-        'mental':    {'name': 'MENTAL CHAMPION',     'emoji': '🧠', 'color': '#FFD700', 'desc': "Ton atout c'est l'esprit. Humeur et productivité au top — tu maîtrises ton état intérieur."},
-        'recovering':{'name': 'RECOVERING ATHLETE',  'emoji': '🔄', 'color': '#FF3333', 'desc': "Tu es en phase de reconstruction. Irrégularité détectée — concentre-toi sur la constance avant la performance."},
-        'balanced':  {'name': 'BALANCED PERFORMER',  'emoji': '⚖️', 'color': '#FFD700', 'desc': "Tu as trouvé l'équilibre parfait. Toutes tes métriques sont au vert — la performance durable par la cohérence."},
+        'morning':   {'name': 'MORNING WARRIOR',    'emoji': '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>', 'color': '#FFD700', 'desc': "Tu maximises ton sommeil pour performer. Tu attaques la journée avec énergie. Le repos est ton arme secrète."},
+        'night':     {'name': 'NIGHT MACHINE',       'emoji': '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', 'color': '#FF9500', 'desc': "Tu fonctionnes différemment — moins de sommeil, performance qui reste haute. Ton corps s\'est adapté."},
+        'endurance': {'name': 'ENDURANCE BEAST',     'emoji': '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M8 22l2-7-2-4 4-2 2 4h4"/><path d="M5 13l3-1"/></svg>', 'color': '#FFD700', 'desc': "Tu es la machine qui ne s\'arrête pas. Sport quotidien, hydratation au top — le carburant parfait."},
+        'mental':    {'name': 'MENTAL CHAMPION',     'emoji': '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>', 'color': '#FFD700', 'desc': "Ton atout c\'est l\'esprit. Humeur et productivité au top — tu maîtrises ton état intérieur."},
+        'recovering':{'name': 'RECOVERING ATHLETE',  'emoji': '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>', 'color': '#FF3333', 'desc': "Tu es en phase de reconstruction. Irrégularité détectée — concentre-toi sur la constance avant la performance."},
+        'balanced':  {'name': 'BALANCED PERFORMER',  'emoji': '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><path d="M3 9l9-7 9 7"/><path d="M3 9h18"/><line x1="5" y1="9" x2="5" y2="19"/><line x1="19" y1="9" x2="19" y2="19"/><path d="M3 19h18"/></svg>', 'color': '#FFD700', 'desc': "Tu as trouvé l\'équilibre parfait. Toutes tes métriques sont au vert — la performance durable par la cohérence."},
     }
 
     return {

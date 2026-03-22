@@ -762,8 +762,8 @@ function renderTable(data) {
   const rows = [...data].reverse().map((d) => {
     const date = new Date(d.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
     const sport = d.sport
-      ? '<span class="badge-sport-yes">✓</span>'
-      : '<span class="badge-sport-no">✗</span>';
+      ? '<span class="badge-sport-yes"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>'
+      : '<span class="badge-sport-no"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>';
     return `<tr>
       <td>${date}</td>
       <td>${d.sleep}h</td>
@@ -887,7 +887,7 @@ function renderSportCalendar(data) {
     const day = document.createElement('div');
     const date = new Date(d.date);
     day.className = `sport-day sport-day--${d.sport ? 'yes' : 'no'}`;
-    day.title = `${date.getDate()}/${date.getMonth()+1} — ${d.sport ? 'Sport ✓' : 'Repos'}`;
+    day.title = `${date.getDate()}/${date.getMonth()+1} — ${d.sport ? 'Sport oui' : 'Repos'}`;
     container.appendChild(day);
   });
 }
@@ -915,7 +915,7 @@ async function loadAnalyse() {
       const pct = Math.min(100, Math.round((daysLogged / 3) * 100));
       msgEl.innerHTML = `
         <div class="coach-empty">
-          <div class="coach-empty__avatar">🤖</div>
+          <div class="coach-empty__avatar"><svg width="48" height="48" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="22" height="17" rx="2"/><rect x="10" y="14" width="4" height="5" rx="1"/><rect x="18" y="14" width="4" height="5" rx="1"/><line x1="12" y1="23" x2="20" y2="23"/><line x1="16" y1="3" x2="16" y2="10"/><circle cx="16" cy="2.5" r="2"/><line x1="5" y1="18.5" x2="2" y2="18.5"/><line x1="27" y1="18.5" x2="30" y2="18.5"/></svg></div>
           <div class="coach-empty__title">TON COACH DORT ENCORE...</div>
           <div class="coach-empty__sub">Enregistre tes 3 premiers jours pour le réveiller.</div>
           <div class="coach-empty__progress-wrap">
@@ -1284,7 +1284,7 @@ async function renderGoalsSection() {
           <div class="workout-day__check ${isDone ? 'checked' : ''}"
                onclick="event.stopPropagation(); toggleCheck('${session.key}', '${weekKey}')"
                title="Marquer comme fait">
-            ${isDone ? '✓' : ''}
+            ${isDone ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
           </div>
           <span class="workout-day__day">${session.day}</span>
           <span class="workout-day__name">${session.name}</span>
@@ -1326,11 +1326,11 @@ async function toggleCheck(sessionKey, weekKey) {
     if (data.checked) {
       el.classList.add('is-done');
       checkEl.classList.add('checked');
-      checkEl.textContent = '✓';
+      checkEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     } else {
       el.classList.remove('is-done');
       checkEl.classList.remove('checked');
-      checkEl.textContent = '';
+      checkEl.innerHTML = '';
     }
     // Refresh progress
     renderGoalsSection();
@@ -1369,7 +1369,7 @@ async function loadDNA() {
     }
 
     document.getElementById('dna-profile').style.display = 'block';
-    document.getElementById('dna-emoji').textContent = data.profile_data.emoji;
+    document.getElementById('dna-emoji').innerHTML = data.profile_data.emoji;
     document.getElementById('dna-profile-name').textContent = data.profile_data.name;
     document.getElementById('dna-profile-desc').textContent = data.profile_data.desc;
 
@@ -1475,14 +1475,13 @@ async function loadLeaderboard(category) {
       return;
     }
 
-    const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
     listEl.innerHTML = data.leaderboard.map(entry => {
-      const medal = medals[entry.rank] || '';
       const isMine = entry.is_current_user;
       const pct = entry.score;
+      const rankClass = entry.rank <= 3 ? ` lb-rank--top${entry.rank}` : '';
       return `
         <div class="lb-row${isMine ? ' lb-row--mine' : ''}">
-          <div class="lb-row__rank">${medal || entry.rank}</div>
+          <div class="lb-row__rank${rankClass}">${entry.rank}</div>
           <div class="lb-row__name">${entry.warrior_name}${isMine ? ' <span class="lb-you">TOI</span>' : ''}</div>
           <div class="lb-row__score-wrap">
             <div class="lb-row__bar">
@@ -1790,7 +1789,11 @@ function renderBooks() {
     const pagePct = book.pages_total > 0 ? Math.min(100, Math.round((book.pages_read / book.pages_total) * 100)) : 0;
     const statusLabel = { en_cours: 'EN COURS', termine: 'TERMINÉ', a_lire: 'À LIRE' }[book.status] || book.status;
     const statusClass = { en_cours: 'book-status--en-cours', termine: 'book-status--termine', a_lire: 'book-status--a-lire' }[book.status] || '';
-    const stars = book.rating ? '★'.repeat(book.rating) + '☆'.repeat(5 - book.rating) : '☆☆☆☆☆';
+    const starFilled = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:#FFD700"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    const starEmpty = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-3)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+    const stars = book.rating
+      ? Array.from({length: 5}, (_, i) => i < book.rating ? starFilled : starEmpty).join('')
+      : Array(5).fill(starEmpty).join('');
     const initials = book.title.charAt(0).toUpperCase();
 
     card.innerHTML = `

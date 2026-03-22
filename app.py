@@ -37,7 +37,7 @@ google_bp = make_google_blueprint(
     client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
     scope=['openid', 'https://www.googleapis.com/auth/userinfo.email',
            'https://www.googleapis.com/auth/userinfo.profile'],
-    redirect_url='/auth/google/callback',
+    redirect_url='https://web-production-e98c6.up.railway.app/auth/google/callback',
 )
 app.register_blueprint(google_bp, url_prefix='/auth')
 

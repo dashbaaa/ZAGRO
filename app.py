@@ -2,15 +2,12 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from flask_dance.contrib.google import make_google_blueprint, google
 from datetime import datetime
 import bcrypt
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
-
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '0'
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -37,17 +34,6 @@ def log_request():
         app.logger.info(f"Request URL: {request.url}")
         app.logger.info(f"Request headers: {dict(request.headers)}")
 
-# ── Google OAuth ───────────────────────────────────────────────────
-google_bp = make_google_blueprint(
-    client_id=os.environ.get('GOOGLE_CLIENT_ID'),
-    client_secret=os.environ.get('GOOGLE_CLIENT_SECRET'),
-    scope=['openid', 'https://www.googleapis.com/auth/userinfo.email',
-           'https://www.googleapis.com/auth/userinfo.profile'],
-    redirect_url='https://web-production-e98c6.up.railway.app/auth/google/callback',
-    reprompt_consent=True
-)
-app.config['PREFERRED_URL_SCHEME'] = 'https'
-app.register_blueprint(google_bp, url_prefix='/auth')
 
 # ── Models ────────────────────────────────────────────────────────
 
@@ -149,16 +135,35 @@ def pricing():
 def legal():
     return render_template('legal.html')
 
+@app.route('/auth/google')
+def google_login():
+    import urllib.parse
+    params = {
+        'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
+        'redirect_uri': 'https://web-production-e98c6.up.railway.app/auth/google/callback',
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'access_type': 'offline'
+    }
+    url = 'https://accounts.google.com/o/oauth2/v2/auth?' + urllib.parse.urlencode(params)
+    return redirect(url)
+
 @app.route('/auth/google/callback')
 def google_callback():
-    if not google.authorized:
-        return redirect(url_for('auth'))
-    resp = google.get('/oauth2/v2/userinfo')
-    if not resp.ok:
-        return redirect(url_for('auth'))
-    info = resp.json()
-    email = info.get('email', '').lower()
-    name  = info.get('name') or info.get('given_name') or email.split('@')[0]
+    import urllib.parse, requests as req
+    code = request.args.get('code')
+    token_resp = req.post('https://oauth2.googleapis.com/token', data={
+        'code': code,
+        'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
+        'client_secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
+        'redirect_uri': 'https://web-production-e98c6.up.railway.app/auth/google/callback',
+        'grant_type': 'authorization_code'
+    })
+    tokens = token_resp.json()
+    user_info = req.get('https://www.googleapis.com/oauth2/v2/userinfo',
+        headers={'Authorization': f"Bearer {tokens['access_token']}"}).json()
+    email = user_info.get('email', '').lower()
+    name = user_info.get('name') or email.split('@')[0]
     if not email:
         return redirect(url_for('auth'))
     user = User.query.filter_by(email=email).first()

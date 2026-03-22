@@ -1154,14 +1154,14 @@ canvas { display: block; width: 100% !important; }
   /* Topbar */
   .topbar { padding: 14px 16px; gap: 12px; }
 
-  /* Stats bar → 2×2 grid */
+  /* Stats bar → single row, each item equal flex */
   .quick-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    flex-wrap: unset;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
-  .quick-stat { flex: unset; min-width: 0; }
+  .quick-stat { flex: 1; min-width: 0; }
+  .quick-stat__label { font-size: clamp(0.55rem, 2vw, 0.68rem); }
 
   /* Content sections */
   .content-section { padding: 20px 16px; }
@@ -1222,9 +1222,9 @@ canvas { display: block; width: 100% !important; }
   .quick-stat__val { font-size: 1.05rem; }
   .quick-stat__icon { font-size: 1.1rem; }
 
-  .content-section { padding: 14px 12px; }
+  .content-section { padding: 14px 16px; }
 
-  .metric-card { padding: 14px 12px; }
+  .metric-card { padding: 14px 16px; }
   .metric-card__header { gap: 10px; margin-bottom: 14px; }
   .metric-icon { width: 36px; height: 36px; min-width: 36px; font-size: 1.1rem; }
 
@@ -1308,10 +1308,16 @@ canvas { display: block; width: 100% !important; }
 }
 
 .dna-card__emoji {
-  font-size: 2.8rem;
-  display: block;
-  margin-bottom: 12px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #FFD700;
+}
+.dna-card__emoji svg {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
 }
 
 .dna-card__name {
@@ -1462,8 +1468,12 @@ canvas { display: block; width: 100% !important; }
   flex-direction: row;
   gap: 6px;
   margin-bottom: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.lb-filters::-webkit-scrollbar { display: none; }
 
 .lb-filter {
   padding: 7px 16px;
@@ -1478,6 +1488,8 @@ canvas { display: block; width: 100% !important; }
   text-transform: uppercase;
   letter-spacing: 0.06em;
   border-radius: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .lb-filter.active {

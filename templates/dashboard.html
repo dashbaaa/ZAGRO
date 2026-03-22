@@ -761,11 +761,10 @@
     <div class="quote-modal">
       <div class="quote-modal__glow"></div>
       <div class="quote-modal__tag">Citation du jour</div>
-      <blockquote class="quote-modal__text" id="quote-text"></blockquote>
+      <blockquote class="quote-modal__text" id="quote-text">"{{ quote.text }}"</blockquote>
       <div class="quote-modal__author">
         <div>
-          <div class="quote-modal__name" id="quote-name"></div>
-          <div class="quote-modal__sport" id="quote-sport"></div>
+          <div class="quote-modal__name" id="quote-name">{{ quote.author }}</div>
         </div>
       </div>
       <button class="btn btn--primary btn--lg quote-modal__cta" onclick="closeQuote()">

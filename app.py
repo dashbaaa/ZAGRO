@@ -5,7 +5,51 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from datetime import datetime
 import bcrypt
 import os
+import random
 from dotenv import load_dotenv
+
+QUOTES = [
+    {"text": "La douleur est temporaire. Abandonner dure pour toujours.", "author": "Lance Armstrong"},
+    {"text": "Le succès c'est tomber sept fois et se relever huit.", "author": "Proverbe japonais"},
+    {"text": "Impossible n'est pas français.", "author": "Napoléon Bonaparte"},
+    {"text": "Le seul mauvais entraînement est celui qu'on n'a pas fait.", "author": "Kobe Bryant"},
+    {"text": "Stay hard.", "author": "David Goggins"},
+    {"text": "Les champions ne sont pas faits dans les salles de sport. Ils sont faits de ce qu'ils ont au fond d'eux.", "author": "Muhammad Ali"},
+    {"text": "Je peux parce que je pense que je peux.", "author": "Virgile"},
+    {"text": "Chaque matin tu as deux choix : continuer à dormir avec tes rêves, ou te lever et les réaliser.", "author": "Carmelo Anthony"},
+    {"text": "Le talent c'est rien sans le travail.", "author": "Zinedine Zidane"},
+    {"text": "Ne limite pas tes défis, défie tes limites.", "author": "Jerry Dunn"},
+    {"text": "Ce n'est pas la montagne que nous conquérons, mais nous-mêmes.", "author": "Edmund Hillary"},
+    {"text": "La motivation te fait démarrer. L'habitude te fait continuer.", "author": "Jim Ryun"},
+    {"text": "Sois le changement que tu veux voir dans le monde.", "author": "Gandhi"},
+    {"text": "Le corps atteint ce que l'esprit croit.", "author": "Inconnu"},
+    {"text": "Je n'échoue jamais. Soit je gagne, soit j'apprends.", "author": "Nelson Mandela"},
+    {"text": "Travaille pendant qu'ils dorment. Apprends pendant qu'ils font la fête. Vis comme ils rêvent.", "author": "Gary Vaynerchuk"},
+    {"text": "Le plus grand obstacle à la victoire c'est la peur de perdre.", "author": "Jean-Paul Sartre"},
+    {"text": "Hustle beats talent when talent doesn't hustle.", "author": "Ross Simmonds"},
+    {"text": "Chaque répétition te rapproche de ton objectif.", "author": "Arnold Schwarzenegger"},
+    {"text": "Si tu veux quelque chose que tu n'as jamais eu, fais quelque chose que tu n'as jamais fait.", "author": "Thomas Jefferson"},
+    {"text": "Le succès appartient à ceux qui se lèvent tôt.", "author": "Proverbe français"},
+    {"text": "Tu n'as pas à être le meilleur. Tu dois juste être meilleur qu'hier.", "author": "Inconnu"},
+    {"text": "L'entraînement dur aujourd'hui, la victoire facile demain.", "author": "Usain Bolt"},
+    {"text": "Ce qui ne te tue pas te rend plus fort.", "author": "Nietzsche"},
+    {"text": "La discipline est le pont entre les objectifs et leur accomplissement.", "author": "Jim Rohn"},
+    {"text": "Arrête de te plaindre. Commence à travailler.", "author": "David Goggins"},
+    {"text": "Les rêves ne fonctionnent que si toi tu travailles.", "author": "John C. Maxwell"},
+    {"text": "La grandeur n'est pas un don. C'est un choix.", "author": "Will Smith"},
+    {"text": "Je déteste chaque minute d'entraînement, mais je me dis : ne pas abandonner. Souffre maintenant et vis le reste de ta vie en champion.", "author": "Muhammad Ali"},
+    {"text": "Le doute tue plus de rêves que l'échec ne le fera jamais.", "author": "Suzy Kassem"},
+    {"text": "Sois obsédé ou sois ordinaire.", "author": "Grant Cardone"},
+    {"text": "Peu importe à quelle vitesse tu vas, tu dépasses tous ceux qui sont sur le canapé.", "author": "Inconnu"},
+    {"text": "Le succès est la somme de petits efforts répétés jour après jour.", "author": "Robert Collier"},
+    {"text": "Ne souhaitez pas que ce soit plus facile. Souhaitez être meilleur.", "author": "Jim Rohn"},
+    {"text": "La seule limite c'est celle que tu t'imposes.", "author": "Michael Jordan"},
+    {"text": "Chaque jour est une nouvelle chance de changer ta vie.", "author": "Inconnu"},
+    {"text": "L'effort est la clé qui ouvre toutes les portes.", "author": "Thierry Henry"},
+    {"text": "Vis comme si tu mourais demain. Apprends comme si tu vivais pour toujours.", "author": "Gandhi"},
+    {"text": "La victoire se prépare dans l'ombre.", "author": "Tony Parker"},
+    {"text": "Si ça ne te challenge pas, ça ne te change pas.", "author": "Fred DeVito"},
+]
 
 load_dotenv()
 
@@ -119,7 +163,8 @@ def index():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    quote = random.choice(QUOTES)
+    return render_template('dashboard.html', quote=quote)
 
 @app.route('/auth')
 def auth():

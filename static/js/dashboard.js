@@ -28,84 +28,6 @@ const METRIC_LABELS = {
 };
 
 // ── Quotes ───────────────────────────────────────────────────────
-const QUOTES = [
-  // David Goggins
-  { text: "La douleur est temporaire. Abandonner dure toujours.", author: "David Goggins", sport: "Ultra-marathonien · Navy SEAL" },
-  { text: "Tu es en danger de vivre une vie tellement confortable que tu mourras sans jamais réaliser ton vrai potentiel.", author: "David Goggins", sport: "Ultra-marathonien · Navy SEAL" },
-  { text: "Ne t'arrête pas quand tu es fatigué. Arrête-toi quand c'est fait.", author: "David Goggins", sport: "Ultra-marathonien · Navy SEAL" },
-  { text: "Endurcis ton esprit comme tu endurcis tes mains.", author: "David Goggins", sport: "Ultra-marathonien · Navy SEAL" },
-  { text: "La médiocrité sera toujours là pour t'accueillir si tu baisses les bras.", author: "David Goggins", sport: "Ultra-marathonien · Navy SEAL" },
-
-  // Kobe Bryant
-  { text: "Le repos au sommet, pas en chemin.", author: "Kobe Bryant", sport: "NBA · Los Angeles Lakers · 5× champion" },
-  { text: "Tout ce qui est négatif — la pression, les défis — c'est une opportunité pour moi de m'élever.", author: "Kobe Bryant", sport: "NBA · Los Angeles Lakers · 5× champion" },
-  { text: "Je n'ai rien en commun avec les paresseux qui blâment les autres pour leur manque de succès.", author: "Kobe Bryant", sport: "NBA · Los Angeles Lakers · 5× champion" },
-  { text: "La grandeur n'est pas pour tout le monde. C'est pour ceux qui refusent de s'en contenter.", author: "Kobe Bryant", sport: "NBA · Los Angeles Lakers · 5× champion" },
-
-  // Muhammad Ali
-  { text: "Impossible est un mot qu'on trouve dans le dictionnaire des lâches.", author: "Muhammad Ali", sport: "Boxe · Champion du monde poids lourds" },
-  { text: "Ne compte pas les jours. Fais que les jours comptent.", author: "Muhammad Ali", sport: "Boxe · Champion du monde poids lourds" },
-  { text: "Je détestais chaque minute d'entraînement, mais je me disais : ne lâche pas. Souffre maintenant et vis le reste de ta vie en champion.", author: "Muhammad Ali", sport: "Boxe · Champion du monde poids lourds" },
-  { text: "Il n'est pas question de combien fort tu peux frapper. C'est de combien fort tu peux en prendre.", author: "Muhammad Ali", sport: "Boxe · Champion du monde poids lourds" },
-
-  // Gary Vaynerchuk
-  { text: "Arrête de te plaindre. Commence à travailler.", author: "Gary Vaynerchuk", sport: "Entrepreneur · CEO VaynerMedia" },
-  { text: "Les excuses sont le luxe des gens qui ne veulent pas vraiment réussir.", author: "Gary Vaynerchuk", sport: "Entrepreneur · CEO VaynerMedia" },
-  { text: "Travaille comme si quelqu'un essayait de te voler tout ce que tu as construit.", author: "Gary Vaynerchuk", sport: "Entrepreneur · CEO VaynerMedia" },
-  { text: "Chaque matin tu as deux choix : continuer à dormir avec tes rêves, ou te lever et les poursuivre.", author: "Gary Vaynerchuk", sport: "Entrepreneur · CEO VaynerMedia" },
-
-  // Conor McGregor
-  { text: "Je ne rêve pas. Je manifeste.", author: "Conor McGregor", sport: "MMA · Double champion UFC" },
-  { text: "Il n'y a pas de talent ici. Il y a du travail acharné. C'est une obsession.", author: "Conor McGregor", sport: "MMA · Double champion UFC" },
-  { text: "Nous ne sommes pas ici pour participer. Nous sommes ici pour dominer.", author: "Conor McGregor", sport: "MMA · Double champion UFC" },
-
-  // Arnold Schwarzenegger
-  { text: "Tout ce que je fais, je le fais à 100%. Sinon je ne le fais pas.", author: "Arnold Schwarzenegger", sport: "Bodybuilding · 7× Mr. Olympia" },
-  { text: "Tu peux avoir des résultats ou des excuses. Pas les deux.", author: "Arnold Schwarzenegger", sport: "Bodybuilding · 7× Mr. Olympia" },
-  { text: "Les 3 ou 4 dernières reps, c'est là que le muscle se construit. Cette zone de douleur sépare le champion des autres.", author: "Arnold Schwarzenegger", sport: "Bodybuilding · 7× Mr. Olympia" },
-  { text: "La force ne vient pas de la victoire. C'est ta lutte qui développe ta force.", author: "Arnold Schwarzenegger", sport: "Bodybuilding · 7× Mr. Olympia" },
-
-  // Cristiano Ronaldo
-  { text: "Le talent sans travail n'est rien.", author: "Cristiano Ronaldo", sport: "Football · Real Madrid · Ballon d'Or ×5" },
-  { text: "Je ne suis pas le plus riche, ni le plus intelligent, mais je réussis parce que je continue, encore et encore.", author: "Cristiano Ronaldo", sport: "Football · Real Madrid · Ballon d'Or ×5" },
-  { text: "Votre amour pour ce que vous faites et votre volonté d'aller là où les autres refusent — c'est ce qui vous rendra grand.", author: "Cristiano Ronaldo", sport: "Football · Real Madrid · Ballon d'Or ×5" },
-
-  // Michael Jordan
-  { text: "J'ai raté plus de 9 000 tirs. C'est pourquoi je gagne.", author: "Michael Jordan", sport: "NBA · Chicago Bulls · 6× champion" },
-  { text: "Les obstacles ne m'arrêtent pas. Chaque mur peut être démoli ou contourné.", author: "Michael Jordan", sport: "NBA · Chicago Bulls · 6× champion" },
-  { text: "Tu dois t'attendre à de grandes choses de toi-même avant de les accomplir.", author: "Michael Jordan", sport: "NBA · Chicago Bulls · 6× champion" },
-
-  // Serena Williams
-  { text: "La grandeur ne vient pas de la chance. Elle se construit chaque jour.", author: "Serena Williams", sport: "Tennis · 23 titres Grand Chelem" },
-  { text: "Un champion se définit non pas par ses victoires, mais par comment il se relève après une chute.", author: "Serena Williams", sport: "Tennis · 23 titres Grand Chelem" },
-  { text: "Tu dois croire en toi quand personne d'autre ne le fait.", author: "Serena Williams", sport: "Tennis · 23 titres Grand Chelem" },
-
-  // LeBron James
-  { text: "Je promets que je vais continuer à travailler.", author: "LeBron James", sport: "NBA · Los Angeles Lakers · 4× champion" },
-  { text: "J'aime les critiques. Elles te rendent fort.", author: "LeBron James", sport: "NBA · Los Angeles Lakers · 4× champion" },
-  { text: "Tu ne peux pas avoir peur d'échouer. C'est le seul moyen de réussir.", author: "LeBron James", sport: "NBA · Los Angeles Lakers · 4× champion" },
-
-  // Zinedine Zidane
-  { text: "Pour réussir, il faut oser.", author: "Zinedine Zidane", sport: "Football · Real Madrid · 3× Ballon d'Or" },
-  { text: "Le football, c'est simple. Recevoir, donner, se déplacer.", author: "Zinedine Zidane", sport: "Football · Real Madrid · 3× Ballon d'Or" },
-  { text: "Je n'ai jamais rien gagné sans avoir beaucoup travaillé.", author: "Zinedine Zidane", sport: "Football · Real Madrid · 3× Ballon d'Or" },
-
-  // Tony Robbins
-  { text: "L'action est la clé fondamentale de tout succès.", author: "Tony Robbins", sport: "Coach · Auteur · Entrepreneur" },
-  { text: "Si tu fais ce que tu as toujours fait, tu obtiendras ce que tu as toujours obtenu.", author: "Tony Robbins", sport: "Coach · Auteur · Entrepreneur" },
-  { text: "Ce n'est pas ce qui t'arrive qui compte, c'est ce que tu en fais.", author: "Tony Robbins", sport: "Coach · Auteur · Entrepreneur" },
-  { text: "La différence entre réussir et échouer, c'est souvent de ne pas abandonner.", author: "Tony Robbins", sport: "Coach · Auteur · Entrepreneur" },
-
-  // Elon Musk
-  { text: "Quand quelque chose est assez important, tu le fais même si les chances ne sont pas en ta faveur.", author: "Elon Musk", sport: "Entrepreneur · Tesla · SpaceX" },
-  { text: "Travailler dur, c'est comme manger du verre et regarder l'abîme.", author: "Elon Musk", sport: "Entrepreneur · Tesla · SpaceX" },
-  { text: "Si tu te lèves le matin en pensant que demain sera mieux qu'hier, c'est un bon jour.", author: "Elon Musk", sport: "Entrepreneur · Tesla · SpaceX" },
-
-  // Rocky Balboa
-  { text: "Ce n'est pas comment tu frappes fort. C'est comment tu encaisses et tu continues.", author: "Rocky Balboa", sport: "Film · Rocky Balboa (2006)" },
-  { text: "Tout champion était un jour un prétendant qui a refusé d'abandonner.", author: "Rocky Balboa", sport: "Film · Rocky II (1979)" },
-  { text: "La vie n'est pas à propos de la force avec laquelle on frappe. Elle est à propos de la force avec laquelle on reçoit les coups.", author: "Rocky Balboa", sport: "Film · Rocky Balboa (2006)" },
-];
 
 // ── Milestones ────────────────────────────────────────────────────
 const MILESTONES = [
@@ -1090,18 +1012,6 @@ function buildCorrelationMatrix() {
 
 // ── Daily quote ───────────────────────────────────────────────────
 function showDailyQuote() {
-  const today = todayStr();
-  // const seenKey = 'zagro_quote_seen_' + today;
-  // if (localStorage.getItem(seenKey)) return;
-
-  // Pick a random quote per day — seeded by date string so it's stable within the day
-  const seed = today.split('-').reduce((a, c) => a * 31 + parseInt(c, 10), 7);
-  const q = QUOTES[((seed % QUOTES.length) + QUOTES.length) % QUOTES.length];
-
-  document.getElementById('quote-text').textContent  = `"${q.text}"`;
-  document.getElementById('quote-name').textContent  = q.author;
-  document.getElementById('quote-sport').textContent = q.sport;
-
   const overlay = document.getElementById('quote-overlay');
   overlay.style.display = 'flex';
   requestAnimationFrame(() => overlay.classList.add('quote-overlay--visible'));

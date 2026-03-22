@@ -9,9 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Allow OAuth over HTTP in development only
-if os.environ.get('FLASK_ENV') != 'production':
-    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '0'
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'zagro-dev-secret-key-change-in-prod')
@@ -38,7 +36,9 @@ google_bp = make_google_blueprint(
     scope=['openid', 'https://www.googleapis.com/auth/userinfo.email',
            'https://www.googleapis.com/auth/userinfo.profile'],
     redirect_url='https://web-production-e98c6.up.railway.app/auth/google/callback',
+    reprompt_consent=True
 )
+app.config['PREFERRED_URL_SCHEME'] = 'https'
 app.register_blueprint(google_bp, url_prefix='/auth')
 
 # ── Models ────────────────────────────────────────────────────────

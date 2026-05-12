@@ -59,12 +59,14 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'zagro-dev-secret-key-ch
 
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    # Railway uses postgres:// but SQLAlchemy requires postgresql://
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(os.path.dirname(__file__), 'data', 'zagro.db')
+    # Vercel has a read-only filesystem except /tmp
+    _base = os.path.dirname(os.path.abspath(__file__))
+    _data_dir = '/tmp' if not os.access(_base, os.W_OK) else os.path.join(_base, 'data')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(_data_dir, 'zagro.db')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -196,8 +198,10 @@ def google_login():
 
 @app.route('/auth/google/callback')
 def google_callback():
-    import urllib.parse, requests as req
+    import requests as req
     code = request.args.get('code')
+    if not code:
+        return redirect(url_for('auth'))
     callback_url = url_for('google_callback', _external=True)
     token_resp = req.post('https://oauth2.googleapis.com/token', data={
         'code': code,
@@ -207,8 +211,12 @@ def google_callback():
         'grant_type': 'authorization_code'
     })
     tokens = token_resp.json()
+    access_token = tokens.get('access_token')
+    if not access_token:
+        app.logger.error(f"Google OAuth token error: {tokens}")
+        return redirect(url_for('auth'))
     user_info = req.get('https://www.googleapis.com/oauth2/v2/userinfo',
-        headers={'Authorization': f"Bearer {tokens['access_token']}"}).json()
+        headers={'Authorization': f"Bearer {access_token}"}).json()
     email = user_info.get('email', '').lower()
     name = user_info.get('name') or email.split('@')[0]
     if not email:
@@ -721,30 +729,32 @@ def compute_dna_profile(data):
 # ── DB Init ───────────────────────────────────────────────────────
 
 with app.app_context():
-    os.makedirs(os.path.join(os.path.dirname(__file__), 'data'), exist_ok=True)
+    _is_sqlite = app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite')
+    if _is_sqlite:
+        _db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+        os.makedirs(os.path.dirname(_db_path), exist_ok=True)
     db.metadata.create_all(db.engine, checkfirst=True)
 
-    # ── Column migrations (add new columns to existing tables) ──────
-    with db.engine.connect() as conn:
-        existing = [row[1] for row in conn.execute(db.text("PRAGMA table_info(users)")).fetchall()]
-        migrations = [
-            ("goal",            "VARCHAR(50)  DEFAULT NULL"),
-            ("level",           "VARCHAR(20)  DEFAULT NULL"),
-            ("training_freq",   "VARCHAR(10)  DEFAULT NULL"),
-            ("onboarding_done", "BOOLEAN      DEFAULT 0"),
-        ]
-        migrations = migrations + [("book_goal", "INTEGER DEFAULT 12")]
-        for col, definition in migrations:
-            if col not in existing:
-                conn.execute(db.text(f"ALTER TABLE users ADD COLUMN {col} {definition}"))
-        conn.commit()
+    # SQLite-only column migrations (PostgreSQL columns are created by create_all)
+    if _is_sqlite:
+        with db.engine.connect() as conn:
+            existing = [row[1] for row in conn.execute(db.text("PRAGMA table_info(users)")).fetchall()]
+            for col, definition in [
+                ("goal",            "VARCHAR(50)  DEFAULT NULL"),
+                ("level",           "VARCHAR(20)  DEFAULT NULL"),
+                ("training_freq",   "VARCHAR(10)  DEFAULT NULL"),
+                ("onboarding_done", "BOOLEAN      DEFAULT 0"),
+                ("book_goal",       "INTEGER      DEFAULT 12"),
+            ]:
+                if col not in existing:
+                    conn.execute(db.text(f"ALTER TABLE users ADD COLUMN {col} {definition}"))
+            conn.commit()
 
-        # Migrate weekly_scores table
-        ws_cols = [row[1] for row in conn.execute(db.text("PRAGMA table_info(weekly_scores)")).fetchall()]
-        for col, defn in [('score_sleep','INTEGER DEFAULT 0'),('score_sport','INTEGER DEFAULT 0'),('score_regular','INTEGER DEFAULT 0')]:
-            if ws_cols and col not in ws_cols:
-                conn.execute(db.text(f"ALTER TABLE weekly_scores ADD COLUMN {col} {defn}"))
-        conn.commit()
+            ws_cols = [row[1] for row in conn.execute(db.text("PRAGMA table_info(weekly_scores)")).fetchall()]
+            for col, defn in [('score_sleep','INTEGER DEFAULT 0'),('score_sport','INTEGER DEFAULT 0'),('score_regular','INTEGER DEFAULT 0')]:
+                if ws_cols and col not in ws_cols:
+                    conn.execute(db.text(f"ALTER TABLE weekly_scores ADD COLUMN {col} {defn}"))
+            conn.commit()
 
 if __name__ == '__main__':
     is_production = os.environ.get('FLASK_ENV') == 'production'

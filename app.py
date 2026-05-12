@@ -183,9 +183,10 @@ def legal():
 @app.route('/auth/google')
 def google_login():
     import urllib.parse
+    callback_url = url_for('google_callback', _external=True)
     params = {
         'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
-        'redirect_uri': 'https://web-production-e98c6.up.railway.app/auth/google/callback',
+        'redirect_uri': callback_url,
         'response_type': 'code',
         'scope': 'openid email profile',
         'access_type': 'offline'
@@ -197,11 +198,12 @@ def google_login():
 def google_callback():
     import urllib.parse, requests as req
     code = request.args.get('code')
+    callback_url = url_for('google_callback', _external=True)
     token_resp = req.post('https://oauth2.googleapis.com/token', data={
         'code': code,
         'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
         'client_secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
-        'redirect_uri': 'https://web-production-e98c6.up.railway.app/auth/google/callback',
+        'redirect_uri': callback_url,
         'grant_type': 'authorization_code'
     })
     tokens = token_resp.json()
